@@ -8,6 +8,7 @@
          web-server/http/bindings
          web-server/http/xexpr
          web-server/http/json
+         json
          "response-cors.rkt"
          "user.rkt")
 
@@ -32,17 +33,15 @@
     #:method (or "post" "options")
     (lambda (req)
       (let* ([ip (request-host-ip req)]
-             [binds (request-bindings/raw req)]
-             [name (extract-binding/single 'name binds)]
-             [account (extract-binding/single 'account binds)]
-             [password (extract-binding/single 'password binds)]
+             [pdata (request-post-data/raw req)]
+             [jdata (with-input-from-bytes pdata (λ () (read-json)))]
+             [name (hash-ref jdata 'username)]
+             [account (hash-ref jdata 'account)]
+             [password (hash-ref jdata 'password)]
              [ad (addUser (list (cons 'name  name)
                                 (cons 'account  account )
                                 (cons 'password  password )
                                 (cons 'ipLog ip)))])
-        
-        (display ip)
-   
         (if ad 
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ))
@@ -73,7 +72,7 @@
 (serve/servlet dispatcher
                #:command-line? #t
                #:listen-ip #f
-               #:port 80
+               #:port 5000
                #:servlet-path "/"
                #:servlet-regexp #rx""
                #:extra-files-paths (list (build-path "htdocs"))
