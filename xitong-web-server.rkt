@@ -28,27 +28,36 @@
             (response/cors/jsexpr (hasheq 'status "error"
                                      'msg "登录出错")))))]
    
-   [("api" "register" (string-arg) (string-arg) (string-arg)) ;注册接口
-    #:method (list "POST" "OPTIONS")
-    (lambda (req  name account password)
+   [("api" "register") ;注册接口
+    #:method (or "post" "options")
+    (lambda (req)
       (let* ([ip (request-host-ip req)]
-             [ad (addUser (list (cons 'name  name) (cons 'account  account ) (cons 'password  password ) (cons 'ipLog ip)))])
+             [binds (request-bindings/raw req)]
+             [name (extract-binding/single 'name binds)]
+             [account (extract-binding/single 'account binds)]
+             [password (extract-binding/single 'password binds)]
+             [ad (addUser (list (cons 'name  name)
+                                (cons 'account  account )
+                                (cons 'password  password )
+                                (cons 'ipLog ip)))])
+        
+        (display ip)
    
         (if ad 
             (response/cors/jsexpr (hasheq 'status "ok"
-                                     'data ad ))
+                                          'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                     'msg "账号已存在")))))]
+                                          'msg "账号已存在")))))]
 
    [("api" "currentUser" (string-arg) (string-arg)) ;个人主页接口
     #:method (list "POST" "OPTIONS")
-   (lambda (req  id userToken)
-     (let* ([home (myHome  id userToken)])
-       (display home)
-          (if home
-              (response/cors/jsexpr )                  ;(hasheq (hash-set home (hash 'status "ok" ))))
-              (response/cors/jsexpr (hasheq 'status "error"
-                                     'msg "非法秘钥")))))]))
+    (lambda (req  id userToken)
+      (let* ([home (myHome  id userToken)])
+        (display home)
+        (if home
+            (response/cors/jsexpr )                  ;(hasheq (hash-set home (hash 'status "ok" ))))
+            (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "非法秘钥")))))]))
                                
                                
 
