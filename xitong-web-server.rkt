@@ -17,8 +17,8 @@
 (define-values (dispatcher url)
   (dispatch-rules
    [("api" "login" "account" ) ;登录接口
-    #:method (list "post" "options")
-    (lambda (req account password)
+    #:method (or "post" "options")
+    (lambda (req)
       (let* ([ip (request-host-ip req)]
              [pdata (request-post-data/raw req)]
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
@@ -31,7 +31,7 @@
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data user))
             (response/cors/jsexpr (hasheq 'status "error"
-                                     'msg "信息错误")))))]
+                                     'msg "账号或密码错误")))))]
    
    [("api" "register") ;注册接口
     #:method (or "post" "options")

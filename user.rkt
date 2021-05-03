@@ -25,7 +25,7 @@
 
 
 ;用户登录接口
-;(define lst '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")))
+(define lst '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")))
 (define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")) 
   (define new-lst (remove (assoc 'ipLog lst) lst))
     (define user (xitong-table "user" new-lst ))   ;验证账户
@@ -38,7 +38,7 @@
                                            (assoc 'ipLog lst)
                                            (cons 'userType (table-query-col "user" "userType" (vector-ref user 0)))))
             (userToken (vector-ref user 0)) ;更新秘钥
-            (cons 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
+           (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
           #f))
 
 
