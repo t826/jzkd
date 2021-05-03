@@ -1,1 +1,0 @@
-("8.0" ta6osx ("3309f12c1a9fdeddb277f80685e010d46d9a66af" . "8dfe8b9c8aab489c54e8d81e0da4004af2216dcf") #"/Users/coq/Downloads/jzkd/tools.rkt" #"/Users/coq/Downloads/jzkd/xitong-db.rkt" (collects #"db" #"main.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"trace.rkt"))

@@ -66,8 +66,6 @@
 
 
 
-
-
 ;; Setup The Servlet
 (serve/servlet dispatcher
                #:command-line? #t
@@ -77,8 +75,8 @@
                #:servlet-regexp #rx""
                #:extra-files-paths (list (build-path "htdocs"))
                #:ssl? #f
-               #:stateless? #f
-               #:log-file "jzkd.log")
+               #:stateless? #t
+               #:log-file "jzkd-web.log")
 
 
 (trace dispatcher)
