@@ -6,18 +6,17 @@
 
 
 
-; 传表名 查指针 返回所有id
-(define (xitong-table table-name [pair-lst #f])   
+; 传表名 查指针 返回所有id  
+(define (xitong-table table-name [pair-lst #f]) ;列表 例 (xitong-table "user"  (list '(account ."17051006278") '(password . "safssf")))--->'#(53 "17051006278" "safssf")
+  (define (result table-name pair-lst) 
+  (define-values   (str-k lst-v) (update->kv pair-lst))    
+  (apply query-maybe-row
+         (append
+          (list xitong (string-append "select id,"(string-replace str-k "=?" "")" from " table-name " where "(string-replace str-k "," " and ")))
+          lst-v)))
   (if pair-lst
-      (begin
-        (let* ([eles (map (lambda (v) (car v)) pair-lst)]
-               [qes (query-eles eles)]
-               [vs (map (lambda (p) (cdr p)) pair-lst)])
-          (apply query-exec
-                 (append
-                  (list xitong (string-append "select from " table-name " where =? and account=? " qes))
-                  vs))))
-        (query-list xitong (string-append "select id from " table-name))))
+      (result table-name pair-lst)
+      (query-list xitong (string-append "select id from " table-name))))
 
  ;查询一个指定页数的表 返回所有id 
 (define (xitong-table-in-page table n page-size ) 
@@ -87,7 +86,4 @@
          (append
           (list xitong (string-append "insert into user (" qe ") values (" qv ")"))
           vs)))
-
-
-
 (trace table-query-col)

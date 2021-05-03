@@ -34,6 +34,7 @@
 
 
 
+
 ;(define b (vector "陈权业" "15077090552" "MTYxOTQxMDEzNzEyOC43MzM2"))
 ;(define a (list 'name 'account 'userTkoen))
 ;(define number -1)
@@ -57,8 +58,8 @@
 
 
 ;传pair类型list 返回key 或者values 列表
-;    '((a . 3) (b . 6))
-(define (pair-list->kv lst ) ;插入数据用
+;    '((a . 3) (b . 6)) -->  "a,b"   "?,?"    '(3 6)
+(define (pair-list->kv lst ) ;插入数据用  
   
   (define str-lst 
            (map (lambda(x)

@@ -25,9 +25,9 @@
 
 
 ;用户登录接口
-(define (login account password ip)
+(define (login lst)   ; '(account password ip)
   
-  (define users (query-rows xitong"select id, userType,userToken from user where account =? and password =? "account password));查询账户是否存在
+  (define users (xitong-table "user" ;验证账户
   (cond [(<= (length users) 0) #f]
       [else (userToken "account" account)
             (define  x (query-row xitong"select id, name,userType from user where account =?"account)) 
