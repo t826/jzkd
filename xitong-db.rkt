@@ -8,7 +8,7 @@
   (virtual-connection
    (connection-pool
     (lambda ()
-      (mysql-connect #:server "43.128.26.51"
+      (mysql-connect #:server "127.0.0.1"
                      #:port 3306
                      #:database "xitong"
                      #:user "xitong"
