@@ -16,18 +16,22 @@
 ;;; Dispatches
 (define-values (dispatcher url)
   (dispatch-rules
-   [("api" "login" "account" (string-arg) (string-arg)) ;登录接口
-    #:method (list "POST" "OPTIONS")
+   [("api" "login" "account" ) ;登录接口
+    #:method (list "post" "options")
     (lambda (req account password)
       (let* ([ip (request-host-ip req)]
-             [user (login account password ip)])
+             [pdata (request-post-data/raw req)]
+             [jdata (with-input-from-bytes pdata (λ () (read-json)))]
+             [account (hash-ref jdata 'account)]
+             [password (hash-ref jdata 'password)]
+             [user (login (list (cons 'account  account )
+                                (cons 'password  password )
+                                (cons 'ipLog ip)))])
         (if user
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'id (vector-ref user 0)
-                                          'userType (vector-ref user 1)
-                                     'userToken (vector-ref user 2)))
+                                          'data user))
             (response/cors/jsexpr (hasheq 'status "error"
-                                     'msg "登录出错")))))]
+                                     'msg "信息错误")))))]
    
    [("api" "register") ;注册接口
     #:method (or "post" "options")
@@ -46,9 +50,11 @@
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号已存在")))))]
+                                          'msg "账号已存在")))))]))
 
-   [("api" "currentUser" (string-arg) (string-arg)) ;个人主页接口
+
+
+#|   [("api" "currentUser" (string-arg) (string-arg)) ;个人主页接口
     #:method (list "POST" "OPTIONS")
     (lambda (req  id userToken)
       (let* ([home (myHome  id userToken)])
@@ -56,10 +62,10 @@
         (if home
             (response/cors/jsexpr )                  ;(hasheq (hash-set home (hash 'status "ok" ))))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "非法秘钥")))))]))
+                                          'msg "非法秘钥")))))]
                                
                                
-
+|#
 
 
 

@@ -25,14 +25,30 @@
 
 
 ;用户登录接口
-(define (login lst)   ; '(account password ip)
-  
-  (define users (xitong-table "user" ;验证账户
-  (cond [(<= (length users) 0) #f]
-      [else (userToken "account" account)
-            (define  x (query-row xitong"select id, name,userType from user where account =?"account)) 
-            (query-exec xitong " insert into loginLog (userId,name,account,ipLOg ,userType) values(?,?,?,?,?)" (vector-ref x 0) (vector-ref x 1) account ip (vector-ref x 2)) ;添加登录日志表
-            (car (query-rows xitong"select id, userType,userToken from user where account =? and password =? "account password))])) ;返回信息
+;(define lst '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")))
+(define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")) 
+  (define new-lst (remove (assoc 'ipLog lst) lst))
+    (define user (xitong-table "user" new-lst ))   ;验证账户
+      (if user
+          (begin
+           (table-insert-one "loginLog"  (list    ;添加登录日志表
+                                           (cons 'userId (vector-ref user 0)) ;userid 
+                                           (cons 'name (table-query-col "user" "name" (vector-ref user 0))) ;name
+                                           (assoc 'account lst)
+                                           (assoc 'ipLog lst)
+                                           (cons 'userType (table-query-col "user" "userType" (vector-ref user 0)))))
+            (userToken (vector-ref user 0)) ;更新秘钥
+            (cons 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
+          #f))
+
+
+
+    
+;  (cond [(<= (length users) 0) #f]
+ ;     [else (userToken "account" account)
+  ;          (define  x (query-row xitong"select id, name,userType from user where account =?"account)) 
+   ;         (query-exec xitong " insert into loginLog (userId,name,account,ipLOg ,userType) values(?,?,?,?,?)" (vector-ref x 0) (vector-ref x 1) account ip (vector-ref x 2)) ;添加登录日志表
+    ;        (car (query-rows xitong"select id, userType,userToken from user where account =? and password =? "account password))])) ;返回信息
 ;用户我的主页
 (define (myHome id userToken )
   (if (key-check id userToken ) 

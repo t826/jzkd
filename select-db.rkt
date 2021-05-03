@@ -17,7 +17,6 @@
   (if pair-lst
       (result table-name pair-lst)
       (query-list xitong (string-append "select id from " table-name))))
-
  ;查询一个指定页数的表 返回所有id 
 (define (xitong-table-in-page table n page-size ) 
   (query-list xitong (string-append "select id from "table" limit ?,? ") (* (- n 1) page-size) (* n page-size )))
@@ -86,4 +85,3 @@
          (append
           (list xitong (string-append "insert into user (" qe ") values (" qv ")"))
           vs)))
-(trace table-query-col)
