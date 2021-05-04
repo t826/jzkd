@@ -4,9 +4,7 @@
   web-server/http
   json)
 
-(provide response/cors/jsexpr
-         response/cors/options/OK
-         response/cors/template)
+(provide (all-defined-out))
 
 (define (response/cors/jsexpr jsexpr)
   (response/jsexpr
@@ -28,3 +26,12 @@
    (list (header #"Access-Control-Allow-Origin" #"*")
          (header #"Access-Control-Allow-Headers" #"*"))
    (list (jsexpr->bytes (hash 'status "ok")))))
+
+
+(define (response/cors/options/400)
+  (response/full
+   400 #"Bad Request"
+   (current-seconds) #"application/json"
+   (list (header #"Access-Control-Allow-Origin" #"*")
+         (header #"Access-Control-Allow-Headers" #"*"))
+   (list (jsexpr->bytes (hash 'status "error")))))

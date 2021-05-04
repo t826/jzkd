@@ -29,7 +29,6 @@
 
 ; 查询单行多个值 传表名 id [id-name]  列名(symblo)表    返回 #hash
 (define (table-query-one table #:id-name[id-name "id"] id lst) 
-;  (define eles (query-eles lst)) 
   (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table" where "id-name" = ?") id))
   (if v (vector->hash lst v) v))
 
@@ -41,6 +40,13 @@
   (map (lambda (v)
          (vector->hash lst v))
        vs))
+
+; 查询单行全部值 传表名 id [id-name]     返回 #hash
+(define (table-query-row table #:id-name[id-name "id"] id )
+ (define lst (map (λ(x)
+                 (append (string->symbol(vector->values x)))) (query-rows xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table)))
+  (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table" where "id-name" = ?") id))
+  (if v (vector->hash lst v) v))
 
 
 

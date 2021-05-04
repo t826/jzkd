@@ -23,7 +23,6 @@
       (hash 'userToken (table-query-col "user" "userToken" user-id)))));返回秘钥
 
 
-
 ;用户登录接口
 (define lst '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")))
 (define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")) 
@@ -42,13 +41,29 @@
           #f))
 
 
+;用户验证接口
+(define (check-user userToken)
+  (let ([id (table-query-col  "user" "id" userToken "userToken" )])
+    (table-query-one "user"  id (list 'name 'id 'userToken  'avatar 'userType ) )))
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     
-;  (cond [(<= (length users) 0) #f]
- ;     [else (userToken "account" account)
-  ;          (define  x (query-row xitong"select id, name,userType from user where account =?"account)) 
-   ;         (query-exec xitong " insert into loginLog (userId,name,account,ipLOg ,userType) values(?,?,?,?,?)" (vector-ref x 0) (vector-ref x 1) account ip (vector-ref x 2)) ;添加登录日志表
-    ;        (car (query-rows xitong"select id, userType,userToken from user where account =? and password =? "account password))])) ;返回信息
+
 ;用户我的主页
 (define (myHome id userToken )
   (if (key-check id userToken ) 

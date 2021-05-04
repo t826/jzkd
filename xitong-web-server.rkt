@@ -10,7 +10,7 @@
          web-server/http/json
          json
          "response-cors.rkt"
-         "user.rkt")
+         "user.rkt" "home.rkt")
 
 
 ;;; Dispatches
@@ -50,22 +50,39 @@
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号已存在")))))]))
+                                          'msg "账号已存在")))))]
 
 
 
-#|   [("api" "currentUser" (string-arg) (string-arg)) ;个人主页接口
-    #:method (list "POST" "OPTIONS")
-    (lambda (req  id userToken)
-      (let* ([home (myHome  id userToken)])
-        (display home)
-        (if home
-            (response/cors/jsexpr )                  ;(hasheq (hash-set home (hash 'status "ok" ))))
+   [("api" "auth") ;用户接口验证
+    #:method (or "post" "options")
+    (lambda (req )
+      (let* ([header (request-headers req)]
+             [userToken (cdr (assoc 'auth header)) ]
+             [ad (check-user userToken)])
+        
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"
+                                          'auth ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "非法秘钥")))))]
-                               
-                               
-|#
+                                          'msg "验证错误")))))]
+
+   
+    [("api" "allocation") ;基础配置接口
+    #:method (or "post" "options")
+    (lambda (req )
+     (let*  ([header (request-headers req)]
+       [userToken (cdr (assoc 'auth header)) ]
+       [bindings (request-bindings req)]
+       [userId (if (exists-binding? 'id bindings)
+           (extract-binding/single 'id bindings) #f)]
+       [ad (if userId (get-allocation userId userToken) #f)])
+           (if ad
+               (response/cors/jsexpr (hasheq 'status "ok"
+                                             'data ad ))
+               (response/cors/options/400))))]))
+            
+
 
 
 

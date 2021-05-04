@@ -1,7 +1,7 @@
 #lang racket
 
 (provide query-eles strappend list->values string* vector->hash pair-list->kv update->kv sql-null->#f )
-(require racket/trace db) 
+(require racket/trace db)  (require db/util/datetime)  (require racket/date)
          
 
 (define (query-eles lst) ;symbol->string
@@ -41,10 +41,13 @@
 
 
 (define (sql-null->#f k)
-  (if (sql-null? k) #f k))
+  (cond [(sql-null? k) #f]
+        [(sql-timestamp? k)
+         (date->string (sql-datetime->srfi-date k) #t)]
+        [else k]))
 
 (define (vector->hash list-key vector-value)
-  (apply hash
+  (apply hasheq
          (let loop ([lk list-key]
                     [vv vector-value]
                     [index (- (length list-key) 1)])
