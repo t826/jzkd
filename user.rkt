@@ -1,5 +1,5 @@
-#lang racket
-(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt")
+#lang racket/base 
+(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt") 
 (provide (all-defined-out))
 ;验证秘钥
 (define (key-check id userToken ) ;返回 #t或#f
@@ -24,8 +24,8 @@
 
 
 ;用户登录接口
-(define lst '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")))
-(define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255")) 
+
+(define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255"))
   (define new-lst (remove (assoc 'ipLog lst) lst))
     (define user (xitong-table "user" new-lst ))   ;验证账户
       (if user
@@ -39,12 +39,12 @@
             (userToken (vector-ref user 0)) ;更新秘钥
            (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
           #f))
-
-
 ;用户验证接口
 (define (check-user userToken)
   (let ([id (table-query-col  "user" "id" userToken "userToken" )])
-    (table-query-one "user"  id (list 'name 'id 'userToken  'avatar 'userType ) )))
+    (if id
+    (table-query-one "user"  id (list 'name 'id 'userToken  'avatar 'userType )) #f)))
+    
   
 
 
@@ -119,6 +119,6 @@
                  (query-exec xitong(string-append "UPDATE user SET " userdate " = ? where id = ?")new-value id)]
                 [else #f])]
              [else #f])))
-       
-         
+
+
       

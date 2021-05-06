@@ -1,6 +1,6 @@
-#lang racket
+#lang racket/base
 
-(require crypto db base64
+(require crypto db net/base64
          "xitong-db.rkt")
 (require crypto/libcrypto)
 (crypto-factories (list libcrypto-factory))
@@ -11,4 +11,4 @@
 ;根据账号用户id 更新秘钥
 (define (userToken id)
   (query-exec xitong (string-append"update user set userToken =? where id= ?")
-              (base64-encode(number->string (current-inexact-milliseconds))) id))
+              (base64-encode (string->bytes/locale (number->string(current-inexact-milliseconds))) "") id))

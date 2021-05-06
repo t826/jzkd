@@ -1,5 +1,5 @@
-#lang racket
-(require racket/trace) (provide (all-defined-out))
+#lang racket/base
+(require racket/trace) (provide (all-defined-out))(require racket/string) 
 (require db
          "tools.rkt"
          "xitong-db.rkt")
@@ -91,3 +91,4 @@
          (append
           (list xitong (string-append "insert into user (" qe ") values (" qv ")"))
           vs)))
+

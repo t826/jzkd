@@ -1,5 +1,5 @@
-#lang racket
-(require racket/trace)
+#lang racket/base
+ (require racket/port)
 (require web-server/servlet-env
          web-server/dispatch
          web-server/configuration/responders
@@ -29,7 +29,7 @@
                                 (cons 'ipLog ip)))])
         (if user
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data user))
+                                          'data user) 1)
             (response/cors/jsexpr (hasheq 'status "error"
                                      'msg "账号或密码错误")))))]
    
@@ -46,11 +46,11 @@
                                 (cons 'account  account )
                                 (cons 'password  password )
                                 (cons 'ipLog ip)))])
-        (if ad 
+        (if ad  
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data ad ))
+                                          'data ad ) 1)
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号已存在")))))]
+                                          'msg "账号已存在") 1))))]
 
 
 
@@ -63,9 +63,9 @@
         
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'auth ad ))
+                                          'auth ad ) 1)
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "验证错误")))))]
+                                          'msg "验证错误")1))))]
 
    
     [("api" "allocation") ;基础配置接口
@@ -102,4 +102,4 @@
                #:log-file "jzkd-web.log")
 
 
-(trace dispatcher)
+

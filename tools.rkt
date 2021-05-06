@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 
 (provide query-eles strappend list->values string* vector->hash pair-list->kv update->kv sql-null->#f )
 (require racket/trace db)  (require db/util/datetime)  (require racket/date)

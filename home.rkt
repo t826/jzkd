@@ -1,4 +1,4 @@
-#lang Racket
+#lang racket/base
 (require db
          "user.rkt" "select-db.rkt" "xitong-db.rkt")
 (provide (all-defined-out))
