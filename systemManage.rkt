@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 (require db
          "user.rkt")
 (provide (all-defined-out))

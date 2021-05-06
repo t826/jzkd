@@ -1,9 +1,7 @@
 #lang racket/base
 
-(require crypto db net/base64
+(require db net/base64
          "xitong-db.rkt")
-(require crypto/libcrypto)
-(crypto-factories (list libcrypto-factory))
 (provide userToken)
 
 
