@@ -42,11 +42,16 @@
        vs))
 
 ; 查询单行全部值 传表名 id [id-name]     返回 #hash
-(define (table-query-row table #:id-name[id-name "id"] id )
+(define (table-query-row table-name #:id-name[id-name "id"] id )
  (define lst (map (λ(x)
-                 (append (string->symbol(vector->values x)))) (query-rows xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table)))
-  (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table" where "id-name" = ?") id))
+                 (append (string->symbol(vector->values x)))) (get-mame-cols table-name)))
+  (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table-name" where "id-name" = ?") id))
   (if v (vector->hash lst v) v))
+
+
+;查询表中所有列名
+(define (get-mame-cols table-name)
+  (query-list xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table-name))
 
 
 
@@ -77,6 +82,19 @@
 ;删除整个表内的数据
 (define (table-delete-all  table )
   (query-exec xitong (string-append "delete from "table)))
+
+
+
+
+
+;分页查询
+(define (xitong-many-in-page table-name start end [sort-col "id"] [order "ASC"])
+  (query-list xitong
+              (string-append "SELECT id FROM "table-name " ORDER BY " sort-col " " order
+                             " LIMIT ?, ?")
+              (number->string start)
+              (number->string end)))
+
 
 
 ;添加user表 的用户

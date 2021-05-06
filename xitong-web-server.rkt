@@ -1,13 +1,14 @@
 #lang racket/base
- (require racket/port)
+ (require racket/port) (require racket/trace) 
 (require web-server/servlet-env
          web-server/dispatch
          web-server/configuration/responders
          web-server/http
          web-server/http/request-structs
-         web-server/http/bindings
+        
          web-server/http/xexpr
          web-server/http/json
+         web-server/http/bindings
          json
          "response-cors.rkt"
          "user.rkt" "home.rkt")
@@ -57,9 +58,28 @@
    [("api" "auth") ;用户接口验证
     #:method (or "post" "options")
     (lambda (req )
-      (let* ([header (request-headers req)]
+      (let* ([header (extract-binding/single req)]
              [userToken (cdr (assoc 'auth header)) ]
              [ad (check-user userToken)])
+        
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"
+                                          'auth ad ) 1)
+            (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "验证错误")1))))]
+   [("api" "get-log") ;获取日志
+    #:method (or "get" "options")
+    (lambda (req )
+      (let* ([binding (request-bindings req)]
+             [header (request-headers req)]
+             [id (cdr (assoc 'id header))]
+             [userToken (cdr (assoc 'auth header))])
+             (define-values ( table-name  start end)
+               ((λ(bingding) (values (extract-binding/single '_table-name binding)
+                                     (string->number (extract-binding/single '_start binding))
+                                     (string->number  (extract-binding/single '_end binding)))) binding))
+      (define ad (get-log table-name id userToken start end))
+           
         
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
@@ -71,17 +91,18 @@
     [("api" "allocation") ;基础配置接口
     #:method (or "post" "options")
     (lambda (req )
-     (let*  ([header (request-headers req)]
-       [userToken (cdr (assoc 'auth header)) ]
-       [bindings (request-bindings req)]
-       [userId (if (exists-binding? 'id bindings)
+     (let*  ([header (extract-binding/single req)]
+       [userToken (cdr (assoc 'auth header))]
+       [bindings (extract-binding/single req)]
+       [userId (if (extract-binding/single 'id bindings)
            (extract-binding/single 'id bindings) #f)]
+
        [ad (if userId (get-allocation userId userToken) #f)])
            (if ad
                (response/cors/jsexpr (hasheq 'status "ok"
-                                             'data ad ))
+                                             'data ad ) 1)
                (response/cors/options/400))))]))
-            
+
 
 
 
@@ -100,6 +121,7 @@
                #:ssl? #f
                #:stateless? #t
                #:log-file "jzkd-web.log")
+(trace dispatcher)
 
 
 

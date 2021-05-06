@@ -10,6 +10,21 @@
   (table-query-row "allocation" 1 ) #f)) 
 
 
+
+;获取日志
+(define (get-log table-name userid userToken start end [sort-col "id"] [order "ASC"] )
+  (if (equal? (table-query-col "user" "userType"  userToken "userToken") "rootUser");判断是否为管理员请求
+  (begin
+  (let ([id-lst (xitong-many-in-page table-name start end sort-col order )]
+        [lst(map (λ (x) (string->symbol x))
+            (get-mame-cols table-name))])
+    (table-query-many table-name id-lst lst))) #f))
+
+
+
+
+
+  
 ;平台总用户数
 (define (allUser)
   (query-value xitong "select count(userType) from user where userType='ordUser'"))
