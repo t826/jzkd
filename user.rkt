@@ -39,6 +39,7 @@
             (userToken (vector-ref user 0)) ;更新秘钥
            (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
           #f))
+
 ;用户验证接口
 (define (check-user userToken)
   (let ([id (table-query-col  "user" "id" userToken "userToken" )])
@@ -46,8 +47,12 @@
     (table-query-one "user"  id (list 'name 'id 'userToken  'avatar 'userType )) #f)))
     
   
-
-
+;用户我的主页接口
+(define (myhome userToken)
+  (define userId (table-query-col "user" "id" userToken "userToken")) ;
+  (if userId 
+      (select-join-table "user" "monManage" '(name account userType avatar) '(blanWithdraw  waitWithdraw sucWithdraw refWithdraw )"user.id=monManage.userId" (list userId)) #f))
+       
 
 
 

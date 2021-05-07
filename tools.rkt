@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide query-eles strappend list->values string* vector->hash pair-list->kv update->kv sql-null->#f )
+(provide query-eles strappend list->values string* vector->hash pair-list->kv update->kv sql-null->#f  sb->str id->str)
 (require racket/trace db)  (require db/util/datetime)  (require racket/date)
          
 
@@ -92,8 +92,24 @@
          (string-append (car key-lst) "=?," (str-k (cdr key-lst)))]))
   
   (values (str-k key-lst) val-lst))
-        
 
+
+;连接表查询用
+(define (sb->str table-name lst) ;(sb->str "user" '(name id account)) -->"user.name,user.id,user.account"
+  (cond [(null? lst) null]
+        [(null? (cdr lst)) (string-append table-name "." (symbol->string (car lst)))]
+        [else (string-append table-name "." (symbol->string (car lst)) "," (sb->str table-name (cdr lst)))]))
+(define (id->str table-name id-lst) ;(id->str "user" '(1 2 3 4)) -->"user.id=? or user.id=? or user.id=? or user.id=?"
+  (let loop ([indx (- (length id-lst)1)]
+             [table-name table-name])
+ (cond [(eq? indx 0) (string-append table-name ".id=?" )]
+       [else (string-append  table-name ".id=? or " (loop (- indx 1) table-name))])))
+
+       
+    
+    
+        
+               
 
 
 

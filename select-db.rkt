@@ -49,6 +49,22 @@
   (if v (vector->hash lst v) v))
 
 
+;连表查询(左连接表) 传两个表名 list【表1要查的列名 symbol类型】 list【表2要查的列名 symbol类型】 连接两表关键字 表1查询的list【id】可以多个id
+(define (select-join-table table1 table2 table1-select-keyword-lst  table2-select-keyword-lst join-key [table1-id-lst #f] )
+  (define new-lst (append table1-select-keyword-lst table2-select-keyword-lst))
+  (define lst-pair
+  (if table1-id-lst
+      (begin
+        (apply query-rows (append
+                           (list xitong (string-append "select " (sb->str table1 table1-select-keyword-lst) ","(sb->str table2 table2-select-keyword-lst) " from
+"table1" left join "table2" on "join-key" where "(id->str table1 table1-id-lst))) table1-id-lst)))
+      (begin    
+        (query-rows xitong  (string-append "select " (sb->str table1 table1-select-keyword-lst) ","(sb->str table2 table2-select-keyword-lst) " from
+"table1" left join "table2" on "join-key)))))
+(map (λ (x) (vector->hash new-lst x)) lst-pair))
+
+
+      
 ;查询表中所有列名
 (define (get-mame-cols table-name)
   (query-list xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table-name))

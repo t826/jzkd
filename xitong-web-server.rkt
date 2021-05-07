@@ -49,25 +49,38 @@
                                 (cons 'ipLog ip)))])
         (if ad  
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data ad ) 1)
+                                          'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号已存在") 1))))]
+                                          'msg "账号已存在")))))]
 
 
 
    [("api" "auth") ;用户接口验证
     #:method (or "post" "options")
     (lambda (req )
-      (let* ([header (extract-binding/single req)]
+      (let* ([header (request-headers req)]
              [userToken (cdr (assoc 'auth header)) ]
              [ad (check-user userToken)])
         
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'auth ad ) 1)
+                                          'auth ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "验证错误")1))))]
-   [("api" "get-log") ;获取日志
+                                          'msg "验证错误")))))]
+   
+   [("api" "myhome") ;用户我的主页接口
+    #:method (or "post" "options")
+    (lambda (req )
+      (let* ([header (request-headers req) ]
+             [userToken (cdr (assoc 'auth header)) ]
+             [ad (myhome userToken)])
+        
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"
+                                          'data ad ))
+            (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "验证错误")))))]
+   [("api" "get-log") ;获取日志接口
     #:method (or "get" "options")
     (lambda (req )
       (let* ([binding (request-bindings req)]
@@ -79,13 +92,11 @@
                                      (string->number (extract-binding/single '_start binding))
                                      (string->number  (extract-binding/single '_end binding)))) binding))
       (define ad (get-log table-name id userToken start end))
-           
-        
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'auth ad ) 1)
+                                          'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "验证错误")1))))]
+                                          'msg "验证错误")))))]
 
    
     [("api" "allocation") ;基础配置接口
@@ -93,10 +104,7 @@
     (lambda (req )
      (let*  ([header (extract-binding/single req)]
        [userToken (cdr (assoc 'auth header))]
-       [bindings (extract-binding/single req)]
-       [userId (if (extract-binding/single 'id bindings)
-           (extract-binding/single 'id bindings) #f)]
-
+       [userId (cdr (assoc 'id header))] 
        [ad (if userId (get-allocation userId userToken) #f)])
            (if ad
                (response/cors/jsexpr (hasheq 'status "ok"
