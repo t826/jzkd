@@ -17,6 +17,9 @@
   (if pair-lst
       (result table-name pair-lst)
       (query-list xitong (string-append "select id from " table-name))))
+
+
+
  ;查询一个指定页数的表 返回所有id 
 (define (xitong-table-in-page table n page-size ) 
   (query-list xitong (string-append "select id from "table" limit ?,? ") (* (- n 1) page-size) (* n page-size )))
@@ -68,6 +71,10 @@
 ;查询表中所有列名
 (define (get-mame-cols table-name)
   (query-list xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table-name))
+;根据列统计个数
+(define (get-numbers-col table-name [col "id"])
+   (query-value xitong (string-append "select count(" col ") from "table-name)))
+  
 
 
 

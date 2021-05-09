@@ -7,7 +7,7 @@
 (provide (all-defined-out))
 
 
-(define (response/cors/jsexpr jsexpr [total-count 0]) ;返回json及总页数  
+(define (response/cors/jsexpr jsexpr [total-count 1]) ;返回json及总页数  
   (response/jsexpr
    jsexpr
    #:headers (list (header #"Access-Control-Allow-Origin" #"*")
