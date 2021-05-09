@@ -85,13 +85,15 @@
     (lambda (req )
       (let* ([binding (request-bindings req)]
              [header (request-headers req)]
-             [id (cdr (assoc 'id header))]
+            
              [userToken (cdr (assoc 'auth header))])
              (define-values ( table-name  start end)
-               ((λ(bingding) (values (extract-binding/single '_table-name binding)
+               ((λ(bingding) (values (if (exists-binding?'_table-name  binding)
+                                      (extract-binding/single '_table-name binding)
+                                      "loginLog")
                                      (string->number (extract-binding/single '_start binding))
                                      (string->number  (extract-binding/single '_end binding)))) binding))
-      (define ad (get-log table-name id userToken start end))
+      (define ad (get-log table-name  userToken start end))
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ))

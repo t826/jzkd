@@ -12,7 +12,7 @@
 
 
 ;获取日志
-(define (get-log table-name userid userToken start end [sort-col "id"] [order "ASC"] )
+(define (get-log table-name  userToken start end [sort-col "id"] [order "ASC"] )
   (if (equal? (table-query-col "user" "userType"  userToken "userToken") "rootUser");判断是否为管理员请求
   (begin
   (let ([id-lst (xitong-many-in-page table-name start end sort-col order )]
