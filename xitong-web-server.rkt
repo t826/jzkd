@@ -1,5 +1,5 @@
 #lang racket/base
- (require racket/port) (require racket/trace) 
+(require racket/port) (require racket/trace) 
 (require web-server/servlet-env
          web-server/dispatch
          web-server/configuration/responders
@@ -85,35 +85,36 @@
    [("api" "systemLogs") ;获取日志接口
     #:method (or "get" "options")
     (lambda (req )
-      (let* ([binding (request-bindings req)]
-             [header (request-headers req)]
+      (if (equal? #"OPTIONS" (request-method req))
+          (let* ([binding (request-bindings req)]
+                 [header (request-headers req)]
             
-             [userToken (cdr (assoc 'auth header))])
-             (define-values ( table-name  start end)
-               ((λ(bingding) (values (if (exists-binding?'_table-name  binding)
-                                      (extract-binding/single '_table-name binding)
-                                      "loginLog")
-                                     (string->number (extract-binding/single '_start binding))
-                                     (string->number  (extract-binding/single '_end binding)))) binding))
-      (define ad (get-log table-name  userToken start end))
-        (if ad
-            (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data ad ))
-            (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "验证错误")))))]
+                 [userToken (cdr (assoc 'auth header))])
+            (define-values ( table-name  start end)
+              ((λ(bingding) (values (if (exists-binding?'_table-name  binding)
+                                        (extract-binding/single '_table-name binding)
+                                        "loginLog")
+                                    (string->number (extract-binding/single '_start binding))
+                                    (string->number  (extract-binding/single '_end binding)))) binding))
+            (define ad (get-log table-name  userToken start end))
+            (if ad
+                (response/cors/jsexpr (hasheq 'status "ok"
+                                              'data ad ))
+                (response/cors/jsexpr (hasheq 'status "error"
+                                              'msg "验证错误"))))))]
 
    
-    [("api" "allocation") ;基础配置接口
+   [("api" "allocation") ;基础配置接口
     #:method (or "post" "options")
     (lambda (req )
-     (let*  ([header (extract-binding/single req)]
-       [userToken (cdr (assoc 'auth header))]
-       [userId (cdr (assoc 'id header))] 
-       [ad (if userId (get-allocation userId userToken) #f)])
-           (if ad
-               (response/cors/jsexpr (hasheq 'status "ok"
-                                             'data ad ) 1)
-               (response/cors/options/400))))]))
+      (let*  ([header (extract-binding/single req)]
+              [userToken (cdr (assoc 'auth header))]
+              [userId (cdr (assoc 'id header))] 
+              [ad (if userId (get-allocation userId userToken) #f)])
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"
+                                          'data ad ) 1)
+            (response/cors/options/400))))])
 
 
 
@@ -122,18 +123,19 @@
 
 
 
-;; Setup The Servlet
-(serve/servlet dispatcher
-               #:command-line? #t
-               #:listen-ip #f
-               #:port 5000
-               #:servlet-path "/"
-               #:servlet-regexp #rx""
-               #:extra-files-paths (list (build-path "htdocs"))
-               #:ssl? #f
-               #:stateless? #t
-               #:log-file "jzkd-web.log")
-(trace dispatcher)
+  ;; Setup The Servlet
+  (serve/servlet dispatcher
+                 #:command-line? #t
+                 #:listen-ip #f
+                 #:port 5000
+                 #:servlet-path "/"
+                 #:servlet-regexp #rx""
+                 #:extra-files-paths (list (build-path "htdocs"))
+                 #:ssl? #f
+                 #:stateless? #t
+                 #:log-file "jzkd-web.log")
+  (trace dispatcher)
 
 
 
+  
