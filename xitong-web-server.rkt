@@ -99,8 +99,7 @@
                                     (string->number  (extract-binding/single '_end binding)))) binding))
             (define ad (get-log table-name  userToken start end))
             (if ad
-                (response/cors/jsexpr (hasheq 'status "ok"
-                                              'data ad ))
+                (response/cors/jsexpr ad)
                 (response/cors/jsexpr (hasheq 'status "error"
                                               'msg "验证错误"))))))]
 
