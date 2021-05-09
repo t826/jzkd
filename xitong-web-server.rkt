@@ -86,6 +86,7 @@
     #:method (or "get" "options")
     (lambda (req )
       (if (equal? #"OPTIONS" (request-method req))
+          (response/cors/options/OK)
           (let* ([binding (request-bindings req)]
                  [header (request-headers req)]
             
@@ -114,7 +115,7 @@
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ) 1)
-            (response/cors/options/400))))])
+            (response/cors/options/400))))]))
 
 
 
