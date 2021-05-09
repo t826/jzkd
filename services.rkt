@@ -1,5 +1,5 @@
 #lang racket/base
-
+(require racket/trace)
 (require web-server/servlet-env
          web-server/dispatch
          web-server/configuration/responders
@@ -55,27 +55,27 @@
 
 ;; 系统的三个日志表的getList
 (define (web-logs req)
-      (if (equal? #"OPTIONS" (request-method req))
-          (response/cors/options/OK)
-          (let* ([binding (request-bindings req)]
-                 [header (request-headers req) ]           
-                 [userToken (cdr (assoc 'auth header))]
-                 [uri (request-uri req)]
-                 [url-path (list-ref (url-path uri) 1)]
-                 [des (path/param-path url-path)]  ;; des : loginlogs || monchangelogs ...
-                 [table-name (cond [(equal? des "loginlogs" ) "loginLog"]
-                                   [(equal? des "monchangelogs" ) "monChangeLog"]
-                                   [else "operationLog"])]) 
-            
-            
-            (define-values (   start end)
-              ((λ(bingding) (values (string->number (extract-binding/single '_start binding))
-                                    (string->number  (extract-binding/single '_end binding)))) binding))
-            (define ad (get-log table-name  userToken start end))
-            (if ad
-                (response/cors/jsexpr ad (get-numbers-col table-name ))
-                (response/cors/jsexpr (hasheq 'status "error"
-                                              'msg "验证错误"))))))
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+      (let* ([binding (request-bindings req)]
+             [header (request-headers req) ]           
+             [userToken (cdr (assoc 'auth header))]
+             [uri (request-uri req)]
+             [url-path (list-ref (url-path uri) 1)]
+             [des (path/param-path url-path)]  ;; des : loginlogs || monchangelogs ...
+             [table-name (cond [(equal? des "loginlogs" ) "loginLog"]
+                               [(equal? des "monchangelogs" ) "monChangeLog"]
+                               [else "operationLog"])]) 
+        (define-values (start end)
+          ((λ(bingding) (values (string->number (extract-binding/single '_start binding))
+                                (string->number  (extract-binding/single '_end binding)))) binding))
+        (display table-name)
+  (define ad (get-log table-name  userToken start end))
+  (if ad
+      (response/cors/jsexpr ad (get-numbers-col table-name ))
+      (response/cors/jsexpr (hasheq 'status "error"
+                                    'msg "验证错误"))))))
+  
 
 ;; 验证
 (define (web-auth req )
@@ -88,3 +88,5 @@
                                           'auth ad ))
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误")))))
+
+(trace web-logs)

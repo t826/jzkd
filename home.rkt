@@ -18,8 +18,8 @@
   (let ([id-lst (xitong-many-in-page table-name start end sort-col order )]
         [lst(map (λ (x) (string->symbol x))
             (get-mame-cols table-name))])
-    (table-query-many table-name id-lst lst))) #f))
-
+    (if (null? id-lst) #F
+    (table-query-many table-name id-lst lst))))   #f))
 
 
 

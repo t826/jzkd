@@ -45,7 +45,12 @@
    [("api" "loginlogs") ;获取日志接口
     #:method (or "get" "options")
     web-logs]
-   [("api" "monchanges")
+   
+   [("api" "monchangelogs") 
+    #:method (or "get" "options")
+    web-logs]
+
+     [("api" "operationlog") 
     #:method (or "get" "options")
     web-logs]
 
@@ -89,7 +94,6 @@
                  #:ssl? #f
                  #:stateless? #t
                  #:log-file "jzkd-web.log")
-  (trace dispatcher)
 
 
 
