@@ -82,14 +82,13 @@
                                           'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误")))))]
-   [("api" "systemLogs") ;获取日志接口
+   [("api" "systemlogs") ;获取日志接口
     #:method (or "get" "options")
     (lambda (req )
       (if (equal? #"OPTIONS" (request-method req))
           (response/cors/options/OK)
           (let* ([binding (request-bindings req)]
-                 [header (request-headers req)]
-            
+                 [header (request-headers req) ]           
                  [userToken (cdr (assoc 'auth header))])
             (define-values ( table-name  start end)
               ((λ(bingding) (values (if (exists-binding?'_table-name  binding)
@@ -99,9 +98,18 @@
                                     (string->number  (extract-binding/single '_end binding)))) binding))
             (define ad (get-log table-name  userToken start end))
             (if ad
-                (response/cors/jsexpr (hasheq 'data ad))
+                (response/cors/jsexpr ad (length ad))
                 (response/cors/jsexpr (hasheq 'status "error"
                                               'msg "验证错误"))))))]
+
+   
+;   [("api" "systemlogs" (integer-arg))
+ ;   #:method ("get" "options")
+  ;  (lambda (req id)
+   ;  (let* ([header(request-headers req)]
+    ;         [userToken (cdr (assoc 'auth header))])
+    
+      
 
    
    [("api" "allocation") ;基础配置接口
