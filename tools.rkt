@@ -38,7 +38,7 @@
 ;(define b (vector "陈权业" "15077090552" "MTYxOTQxMDEzNzEyOC43MzM2"))
 ;(define a (list 'name 'account 'userTkoen))
 ;(define number -1)
-
+(date-display-format 'chinese)
 
 (define (sql-null->#f k)
   (cond [(sql-null? k) #f]

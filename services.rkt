@@ -53,7 +53,7 @@
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "账号已存在")))))
 
-;; 系统的三个日志表的getList
+;; 系统的三个日志表的 loginlogs || monchangelogs || operationLog
 (define (web-logs req)
   (if (equal? #"OPTIONS" (request-method req))
       (response/cors/options/OK)
@@ -69,7 +69,6 @@
         (define-values (start end)
           ((λ(bingding) (values (string->number (extract-binding/single '_start binding))
                                 (string->number  (extract-binding/single '_end binding)))) binding))
-        (display table-name)
   (define ad (get-log table-name  userToken start end))
   (if ad
       (response/cors/jsexpr ad (get-numbers-col table-name ))
@@ -89,4 +88,15 @@
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误")))))
 
+;基础配置接口
+(define (web-allocation req )
+      (let*  ([header (request-headers req)]
+              [userToken (cdr (assoc 'auth header))]
+              [ad (if userToken (get-allocation userToken) #f)])
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"
+                                          'data ad ) 1)
+            (response/cors/options/400))))
+
 (trace web-logs)
+

@@ -5,8 +5,9 @@
 ;平台首页
 
 ;获取基础配置接口
-(define (get-allocation userId userToken)
-  (if (xitong-table "user" (list (cons 'id userId) (cons 'userToken userToken) (cons 'userType "rootUser"))) 
+(define (get-allocation userToken)
+  (define userId (table-query-col  "user" "id"  userToken "userToken"))
+  (if (and (xitong-table "user" (list (cons 'id userId) (cons 'userToken userToken) (cons 'userType "rootUser"))) userId )
   (table-query-row "allocation" 1 ) #f)) 
 
 
