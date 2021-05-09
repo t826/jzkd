@@ -20,19 +20,21 @@
    [("api" "login" "account" ) ;登录接口
     #:method (or "post" "options")
     (lambda (req)
-      (let* ([ip (request-host-ip req)]
-             [pdata (request-post-data/raw req)]
-             [jdata (with-input-from-bytes pdata (λ () (read-json)))]
-             [account (hash-ref jdata 'account)]
-             [password (hash-ref jdata 'password)]
-             [user (login (list (cons 'account  account )
-                                (cons 'password  password )
-                                (cons 'ipLog ip)))])
-        (if user
-            (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data user) 1)
-            (response/cors/jsexpr (hasheq 'status "error"
-                                     'msg "账号或密码错误")))))]
+      (if (equal? #"OPTIONS" (request-method req))
+          (response/cors/options/OK)
+          (let* ([ip (request-host-ip req)]
+                 [pdata (request-post-data/raw req)]
+                 [jdata (with-input-from-bytes pdata (λ () (read-json)))]
+                 [account (hash-ref jdata 'account)]
+                 [password (hash-ref jdata 'password)]
+                 [user (login (list (cons 'account  account )
+                                    (cons 'password  password )
+                                    (cons 'ipLog ip)))])
+            (if user
+                (response/cors/jsexpr (hasheq 'status "ok"
+                                              'data user))
+                (response/cors/jsexpr (hasheq 'status "error"
+                                              'msg "账号或密码错误"))))))]
    
    [("api" "register") ;注册接口
     #:method (or "post" "options")
