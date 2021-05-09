@@ -113,16 +113,4 @@
 
 
 
-;添加user表 的用户
-(define (User-add lst) ; 例子:(User-add '(("account" . "12899323") ("password" . "323890slf")))
-  ;; 获取所有的key，然后组合成一个list
-  (define eles
-    (map (lambda (v) (car v)) lst))
-  (define qe (query-eles eles))
-  (define vs (map (lambda (p) (cdr p)) lst))
-  (define qv (query-eles (string* (length lst) "?")))
-  (apply query-exec
-         (append
-          (list xitong (string-append "insert into user (" qe ") values (" qv ")"))
-          vs)))
 

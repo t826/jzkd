@@ -80,7 +80,7 @@
                                           'data ad ))
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误")))))]
-   [("api" "get-log") ;获取日志接口
+   [("api" "systemLogs") ;获取日志接口
     #:method (or "get" "options")
     (lambda (req )
       (let* ([binding (request-bindings req)]
