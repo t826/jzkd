@@ -10,10 +10,11 @@
   (if (and  userId  (xitong-table "user" (list (cons 'id userId) (cons 'userToken userToken) (cons 'userType "rootUser"))))
   (table-query-row "allocation" 1 ) #f))
 ;基础配置修改接口
-(define (update-allocation meth id pair-lst )
+(define (update-allocation userToken meth id pair-lst )
+  (if (equal? (table-query-col  "user" "userType"  userToken "userToken") "rootUser")
  (cond [(equal? meth #"GTE") (table-query-one "allocation" id (get-mame-cols "allocation"))]
         [(equal? meth #"PUT") (table-update-one "allocation"  id pair-lst)]
-        [else #f]))
+        [else #f]) #f))
         
 
 

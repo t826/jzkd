@@ -112,7 +112,7 @@
               [pdata (request-post-data/raw req)]
               [pair-lst (hash->list (with-input-from-bytes pdata (λ () (read-json))))])
         (display pair-lst)
-        (define ad (update-allocation meth id pair-lst ))
+        (define ad (update-allocation userToken meth id pair-lst ))
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"))
                                  
