@@ -90,13 +90,35 @@
 
 ;基础配置接口
 (define (web-allocation req )
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
       (let*  ([header (request-headers req)]
               [userToken (cdr (assoc 'auth header))]
               [ad (if userToken (get-allocation userToken) #f)])
         (if ad
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data ad ) 1)
-            (response/cors/options/400))))
+            (response/cors/options/400)))))
+;基础配置修改接口
+(define (web-update-allocation req id)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+      (let*  ([header (request-headers req)]
+              [userToken (cdr (assoc 'auth header))]
+              [meth (request-method req)]
+              [pdata (request-post-data/raw req)]
+              [pair-lst (hash->list (with-input-from-bytes pdata (λ () (read-json))))])
+        (display pair-lst)
+        (define ad (update-allocation meth id pair-lst ))
+        (if ad
+            (response/cors/jsexpr (hasheq 'status "ok"))
+                                 
+            (response/cors/options/400)))))
+            
+;  [ad (if userToken (get-allocation userToken) #f)])
+   
+
+
 
 (trace web-logs)
 

@@ -46,7 +46,6 @@
      [("api" "operationlogs") 
     #:method (or "get" "options")
     web-logs]
-
    
 ;   [("api" "systemlogs" (integer-arg))
  ;   #:method ("get" "options")
@@ -56,10 +55,17 @@
     
       
 
-   
-   [("api" "allocations") ;基础配置接口
-    #:method (or "get" "options")
-    web-allocation]))
+     [("api" "allocations") ;基础配置信息接口
+      #:method (or "get" "options")
+      web-allocation]
+     [("api" "allocations" (integer-arg)) ;基础配置修改接口
+        #:method (or "get" "put" "options")
+        web-update-allocation]
+
+
+
+
+   ))
 
 
 
@@ -71,6 +77,7 @@
   ;; Setup The Servlet
   (serve/servlet dispatcher
                  #:command-line? #t
+               
                  #:listen-ip #f
                  #:port 5000
                  #:servlet-path "/"
