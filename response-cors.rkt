@@ -13,7 +13,6 @@
    #:headers (list (header #"Access-Control-Allow-Origin" #"*")
                    (header #"Access-Control-Allow-Headers" #"*")
                    (header #"Access-Control-Expose-Headers" #"X-Total-Count")
-                   (header #"Access-Control-Allow-Methods" #"*")
                    (header #"X-Total-Count"
                            (string->bytes/utf-8 (number->string total-count))))))
 
@@ -42,7 +41,8 @@
    200 #"Okay"
    (current-seconds) #"application/json"
    (list (header #"Access-Control-Allow-Origin" #"*")
-         (header #"Access-Control-Allow-Headers" #"*"))
+         (header #"Access-Control-Allow-Headers" #"*")
+         (header #"Access-Control-Allow-Methods" #"*"))
    (list (jsexpr->bytes (hash 'status "ok")))))
 
 
