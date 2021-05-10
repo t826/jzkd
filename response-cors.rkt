@@ -31,7 +31,8 @@
    400 #"Bad Request"
    (current-seconds) #"application/json"
    (list (header #"Access-Control-Allow-Origin" #"*")
-         (header #"Access-Control-Allow-Headers" #"*"))
+         (header #"Access-Control-Allow-Headers" #"*")
+         (header #"Access-Control-Allow-Methods" #"*"))
    (list (jsexpr->bytes (hash 'status "error"
                               'msg "找不到页面")))))
 
