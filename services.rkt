@@ -81,6 +81,8 @@
 
 ;; 验证
 (define (web-auth req )
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
       (let* ([header (request-headers req)]
              [userToken (cdr (assoc 'auth header)) ]
              [ad (check-user userToken)])
@@ -89,7 +91,7 @@
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'auth ad ))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "验证错误")))))
+                                          'msg "验证错误"))))))
 
 ;基础配置接口
 (define (web-allocation req )
