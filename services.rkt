@@ -14,7 +14,8 @@
          "response-cors.rkt"
          "select-db.rkt"
          "user.rkt"
-         "home.rkt")
+         "home.rkt"
+         "checkCode.rkt")
 
 (provide (all-defined-out))
 
@@ -27,7 +28,7 @@
                  [jdata (with-input-from-bytes pdata (λ () (read-json)))]
                  [account (hash-ref jdata 'account)]
                  [password (hash-ref jdata 'password)]
-                 [user (login (list (cons 'account  account )
+                 [user (login  (list (cons 'account  account )
                                     (cons 'password  password )
                                     (cons 'ipLog ip)))])
             (if user
@@ -43,7 +44,9 @@
              [name (hash-ref jdata 'username)]
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
-             [ad (addUser (list (cons 'name  name)
+             [checkCode (hash-ref jdata 'password)]
+             [ad (addUser  (web-checkcode)
+                           (list (cons 'name  name)
                                 (cons 'account  account )
                                 (cons 'password  password )
                                 (cons 'ipLog ip)))])

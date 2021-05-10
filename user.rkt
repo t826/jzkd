@@ -1,5 +1,5 @@
 #lang racket/base 
-(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt") 
+(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt" ) 
 (provide (all-defined-out))
 ;验证秘钥
 (define (key-check id userToken ) ;返回 #t或#f
@@ -9,9 +9,9 @@
 ; 用户管理模块
 
 ;添加用户接口
-(define (addUser pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ip ."255.255.255.255"))
+(define (addUser Boole pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ip ."255.255.255.255"))
  (define user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
-  (if user-id  #f
+  (if (or (not Boole) user-id)  #f
       (begin
         (table-insert-one "user" (remove (assoc 'ipLog pair-list ) pair-list)) ;去ip项 创建用户表
         (set!  user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))

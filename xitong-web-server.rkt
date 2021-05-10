@@ -13,7 +13,8 @@
          "user.rkt"
          "home.rkt"
          "services.rkt"
-         "app-services.rkt")
+         "app-services.rkt"
+         "checkCode.rkt")
 
 
 ;;; Dispatches
@@ -23,7 +24,7 @@
     #:method (or "post" "options")
     web-login]
    
-   [("api" "register") ;注册接口
+   [("api" "rigester") ;注册接口
     #:method (or "post" "options")
     web-register]
 
@@ -38,31 +39,25 @@
    [("api" "loginlogs") ;获取日志接口
     #:method (or "get" "options")
     web-logs]
-   
    [("api" "monchangelogs") 
     #:method (or "get" "options")
     web-logs]
-
-     [("api" "operationlogs") 
+   [("api" "operationlogs") 
     #:method (or "get" "options")
     web-logs]
-   
-;   [("api" "systemlogs" (integer-arg))
- ;   #:method ("get" "options")
-  ;  (lambda (req id)
-   ;  (let* ([header(request-headers req)]
-    ;         [userToken (cdr (assoc 'auth header))])
-    
-      
 
-     [("api" "allocations") ;基础配置信息接口
-      #:method (or "get" "options")
-      web-allocation]
-     [("api" "allocations" (integer-arg)) ;基础配置修改接口
-        #:method (or "get" "put" "options")
-        web-update-allocation]
+   [("api" "checkcode") ;发送短信验证接口
+    #:method (or "pos" "options")
+    web-sendcode]
 
+   [("api" "allocations") ;基础配置信息接口
+    #:method (or "get" "options")
+    web-allocation]
+   [("api" "allocations" (integer-arg)) ;基础配置修改接口
+    #:method (or "get" "put" "options")
+    web-update-allocation]
 
+     
 
 
    ))
