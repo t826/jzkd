@@ -80,9 +80,9 @@
 
    
 
-   [("api" "users") ;修改用户接口
-    #:method (or "get" "put" "options")
-    we-users]
+ ;  [("api" "users") ;修改用户接口
+  ;  #:method (or "get" "put" "options")
+   ; we-users]
    
 
 

@@ -1,6 +1,6 @@
 #lang racket/base
 (require db
-         "user.rkt")
+         "user.rkt" "xitong-db.rkt")
 (provide (all-defined-out))
 
 

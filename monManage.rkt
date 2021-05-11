@@ -37,7 +37,7 @@
 
 
 ;wo我的账户
-(define (change-Money userId userToken projet number )
+#;(define (change-Money userId userToken projet number )
   (let* ([x (hash->list (table-query-one "user" userId '(name account userType)))]
          [before (hash->list (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw advTopUp)))])
     (cond [(not x)  #f ] ;管理账目流向
@@ -71,7 +71,7 @@
   
 
 
-  
+#|  
   
   (define  (now-change userId after) ;自动账目判断变化项  更新账目 添加日志 模块
    ; (display after ) (display before )
@@ -83,7 +83,7 @@
       (query-exec xitong (string-append "update monManage set "(list-ref bbb 0) "="(list-ref bbb 0) "+"(number->string (list-ref bbb 1))" where userId =?") userId)  ;更新账户金额   
       (query-exec xitong "insert into monChangeLog (userId,name,account,changeProjet,changeContent,userType) values(?,?,?,?,?,?)"
                           userId (vector-ref x 0) (vector-ref x 1) (list-ref bbb 0) (list-ref bbb 1) (vector-ref x 2)))) ;添加日志
-  
+  |#
   
 
 ;流水查询 

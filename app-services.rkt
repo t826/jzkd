@@ -48,10 +48,10 @@
 
 
 ;发起提现
-(define (post-waitWithdraw Amount userId)
-  (let ([blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
-        [wait (table-query-col  "monManage" "waitWithdraw"  userId "userId")]))
-(cond [(and (> blan 0) (> Amount 0)) f
+;(define (post-waitWithdraw Amount userId)
+;  (let ([blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
+;        [wait (table-query-col  "monManage" "waitWithdraw"  userId "userId")]))
+;(cond [(and (> blan 0) (> Amount 0)) f
  
   
 ;账目明细 返回#hasheq
