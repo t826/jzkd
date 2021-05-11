@@ -140,7 +140,7 @@
      (response/cors/options/OK)]
     [else
      (define bindings (request-bindings req))
-     (define all-cols (get-all-cols "chips"))
+     (define all-cols (get-all-cols "user"))
      (define pairs (check&get-bindings-list all-cols bindings))
      (define header (request-headers req))
      (define userToken (cdr (assoc 'auth header)))
