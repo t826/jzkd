@@ -37,7 +37,9 @@
                                            (assoc 'ipLog lst)
                                            (cons 'userType (table-query-col "user" "userType" (vector-ref user 0)))))
             (userToken (vector-ref user 0)) ;更新秘钥
-           (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0)))) ;返回秘钥
+           (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0))
+                 'userType  (table-query-col "user" "userType" (vector-ref user 0))
+                 'adv_background_name (table-query-col "allocation" "adv_background_name" (list-ref (xitong-table "allocation") 0)))) ;返回秘钥
           #f))
 
 ;用户验证接口

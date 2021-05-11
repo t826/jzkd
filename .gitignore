@@ -4,3 +4,4 @@ complied/
 *.txt
 *.log
 *.out
+dist/

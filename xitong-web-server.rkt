@@ -20,6 +20,8 @@
 ;;; Dispatches
 (define-values (dispatcher url)
   (dispatch-rules
+   [("") web-index] ;主页
+   
    [("api" "login" "account" ) ;登录接口
     #:method (or "post" "options")
     web-login]

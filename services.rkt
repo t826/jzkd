@@ -8,6 +8,7 @@
          web-server/http/xexpr
          web-server/http/json
          web-server/http/bindings
+         web-server/templates
          json
          net/url-structs
          racket/port
@@ -18,6 +19,10 @@
          "checkCode.rkt")
 
 (provide (all-defined-out))
+
+;; 主页
+(define (web-index req)
+  (response/cors/template (include-template "dist/index.html")))
 
 ;; 登陆
 (define (web-login req)
@@ -125,5 +130,5 @@
 
 
 
-(trace web-logs)
+;(trace web-logs)
 

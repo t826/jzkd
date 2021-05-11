@@ -32,7 +32,7 @@
 
 ; 查询单行多个值 传表名 id [id-name]  列名(symblo)表    返回 #hash
 (define (table-query-one table #:id-name[id-name "id"] id lst) 
-  (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table" where "id-name" = ?") id))
+  (define v (query-maybe-row xitong (string-append "select " (query-eles lst)" from "table" where "id-name" = ?")id))
   (if v (vector->hash lst v) v))
 
 ;查询多行对应的多列 提供 多个id 列名表 返回list  list内为 #hash
@@ -74,8 +74,9 @@
 ;根据列统计个数
 (define (get-numbers-col table-name [col "id"])
    (query-value xitong (string-append "select count(" col ") from "table-name)))
-  
-
+;根据某列相加求和 pair-lst为筛选条件
+#;(define (get-sum-col table-name  col pair-lst)
+  (query-value xitong (string-append "select sum(" col ") from "table-name " where " )))
 
 
 ;插入数据 传表名 list（list为多个pari数据类型） 

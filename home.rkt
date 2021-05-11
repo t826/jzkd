@@ -19,6 +19,8 @@
 
 
 
+
+
 ;获取日志
 (define (get-log table-name  userToken start end [sort-col "id"] [order "ASC"] )
   (if (equal? (table-query-col "user" "userType"  userToken "userToken") "rootUser");判断是否为管理员请求
@@ -35,7 +37,7 @@
   
 ;平台总用户数
 (define (allUser)
-  (query-value xitong "select count(userType) from user where userType='ordUser'"))
+  (get-numbers-col "user"))
 ;今日注册人数
 (define (todayRegi)
   (query-value xitong "select count(createDate) from user where date(createDate) = curdate()"))
