@@ -2,6 +2,7 @@
 (require racket/trace) (provide (all-defined-out))(require racket/string) 
 (require db
          "tools.rkt"
+         "tools2.rkt"
          "xitong-db.rkt")
 
 
@@ -112,13 +113,29 @@
 
 
 ;分页查询
-(define (xitong-many-in-page table-name start end [sort-col "id"] [order "ASC"])
-  (query-list xitong
-              (string-append "SELECT id FROM "table-name " ORDER BY " sort-col " " order
-                             " LIMIT ?, ?")
-              (number->string start)
-              (number->string (- end start))))
-
+(define (xitong-many-in-page table-name start end [sort-col "id"] [order "ASC"]
+                             #:filter-pairs [pairs #f])
+  (cond
+    [pairs
+     (let-values ([(cols vs) (pair-list-values pairs)])
+       (let ([cols-s (symbol-list->string-with-suffix cols " AND " #:suffix "=?")]
+             [formated-vs (sql-format vs)])
+         (apply query-list
+                (append
+                 (list
+                  xitong
+                  (string-append "SELECT id FROM " table-name
+                                 " WHERE " cols-s
+                                 " ORDER BY " sort-col " " order
+                                 " LIMIT ?, ?"))
+                 formated-vs
+                 (list start (- end start))))))]
+    [else
+     (query-list xitong
+                 (string-append "SELECT id FROM "table-name " ORDER BY " sort-col " " order
+                                " LIMIT ?, ?")
+                 (number->string start)
+                 (number->string (- end start)))]))
 
 
 

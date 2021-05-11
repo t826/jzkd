@@ -1,7 +1,7 @@
 *.bak
 .*.swp
-complied/
+complied/*
 *.txt
 *.log
 *.out
-dist/
+dist/*
