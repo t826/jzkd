@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide query-eles strappend list->values string* vector->hash pair-list->kv update->kv sql-null->#f  sb->str id->str)
+(provide (all-defined-out))
 (require racket/trace db)  (require db/util/datetime)  (require racket/date)
          
 
@@ -57,7 +57,7 @@
                                 (sql-null->#f (vector-ref vv index)))]
              [else
               (append (list (list-ref lk index) (sql-null->#f (vector-ref vv index)))
-                     (loop lk vv (- index 1)))]))))
+                      (loop lk vv (- index 1)))]))))
 
 
 ;传pair类型list 返回key 或者values 列表
@@ -65,16 +65,16 @@
 (define (pair-list->kv lst ) ;插入数据用  
   
   (define str-lst 
-           (map (lambda(x)
-        (string-append (symbol->string (car x)))) lst))  
+    (map (lambda(x)
+           (string-append (symbol->string (car x)))) lst))  
   (define (key-str str-lst)
-     (cond [(null? str-lst) null]
+    (cond [(null? str-lst) null]
           [(null? (cdr str-lst)) (car str-lst)]
           [else
            (string-append (car str-lst) "," (key-str (cdr str-lst)))]))
 
   (define value-lst (map (lambda(x)
-        (append (cdr x))) lst))
+                           (append (cdr x))) lst))
   (values (key-str str-lst) (strappend (length lst) "?") value-lst))
 
 
@@ -86,10 +86,10 @@
   (define val-lst (map (lambda(x)
                          (append (cdr x))) lst))
   (define (str-k key-lst )
-  (cond [(null? key-lst) null]
-        [(null? (cdr key-lst)) (string-append (car key-lst) "=?" )]
-        [else
-         (string-append (car key-lst) "=?," (str-k (cdr key-lst)))]))
+    (cond [(null? key-lst) null]
+          [(null? (cdr key-lst)) (string-append (car key-lst) "=?" )]
+          [else
+           (string-append (car key-lst) "=?," (str-k (cdr key-lst)))]))
   
   (values (str-k key-lst) val-lst))
 
@@ -102,8 +102,8 @@
 (define (id->str table-name id-lst) ;(id->str "user" '(1 2 3 4)) -->"user.id=? or user.id=? or user.id=? or user.id=?"
   (let loop ([indx (- (length id-lst)1)]
              [table-name table-name])
- (cond [(eq? indx 0) (string-append table-name ".id=?" )]
-       [else (string-append  table-name ".id=? or " (loop (- indx 1) table-name))])))
+    (cond [(eq? indx 0) (string-append table-name ".id=?" )]
+          [else (string-append  table-name ".id=? or " (loop (- indx 1) table-name))])))
 
        
     
@@ -129,5 +129,4 @@
 
 
 
-
-   
+     
