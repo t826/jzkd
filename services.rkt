@@ -16,7 +16,9 @@
          "select-db.rkt"
          "user.rkt"
          "home.rkt"
-         "checkCode.rkt")
+         "checkCode.rkt"
+         "tools2.rkt"
+         "mdb.rkt")
 
 (provide (all-defined-out))
 
@@ -26,40 +28,40 @@
 
 ;; 登陆
 (define (web-login req)
-      (if (equal? #"OPTIONS" (request-method req))
-          (response/cors/options/OK)
-          (let* ([ip (request-host-ip req)]
-                 [pdata (request-post-data/raw req)]
-                 [jdata (with-input-from-bytes pdata (λ () (read-json)))]
-                 [account (hash-ref jdata 'account)]
-                 [password (hash-ref jdata 'password)]
-                 [user (login  (list (cons 'account  account )
-                                    (cons 'password  password )
-                                    (cons 'ipLog ip)))])
-            (if user
-                (response/cors/jsexpr (hasheq 'status "ok"
-                                              'data user))
-                (response/cors/jsexpr (hasheq 'status "error"
-                                              'msg "账号或密码错误"))))))
-;; 注册
-(define (web-register req)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
       (let* ([ip (request-host-ip req)]
              [pdata (request-post-data/raw req)]
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
-             [name (hash-ref jdata 'username)]
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
-             [checkCode (hash-ref jdata 'password)]
-             [ad (addUser  (web-checkcode)
-                           (list (cons 'name  name)
-                                (cons 'account  account )
-                                (cons 'password  password )
-                                (cons 'ipLog ip)))])
-        (if ad  
+             [user (login  (list (cons 'account  account )
+                                 (cons 'password  password )
+                                 (cons 'ipLog ip)))])
+        (if user
             (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data ad ))
+                                          'data user))
             (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号已存在")))))
+                                          'msg "账号或密码错误"))))))
+;; 注册
+(define (web-register req)
+  (let* ([ip (request-host-ip req)]
+         [pdata (request-post-data/raw req)]
+         [jdata (with-input-from-bytes pdata (λ () (read-json)))]
+         [name (hash-ref jdata 'username)]
+         [account (hash-ref jdata 'account)]
+         [password (hash-ref jdata 'password)]
+         [checkCode (hash-ref jdata 'password)]
+         [ad (addUser  (web-checkcode)
+                       (list (cons 'name  name)
+                             (cons 'account  account )
+                             (cons 'password  password )
+                             (cons 'ipLog ip)))])
+    (if ad  
+        (response/cors/jsexpr (hasheq 'status "ok"
+                                      'data ad ))
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "账号已存在")))))
 
 ;; 系统的三个日志表的 loginlogs || monchangelogs || operationLog
 (define (web-logs req)
@@ -77,11 +79,11 @@
         (define-values (start end)
           ((λ(bingding) (values (string->number (extract-binding/single '_start binding))
                                 (string->number  (extract-binding/single '_end binding)))) binding))
-  (define ad (get-log table-name  userToken start end))
-  (if ad
-      (response/cors/jsexpr ad (get-numbers-col table-name ))
-      (response/cors/jsexpr (hasheq 'status "error"
-                                    'msg "验证错误"))))))
+        (define ad (get-log table-name  userToken start end))
+        (if ad
+            (response/cors/jsexpr ad (get-numbers-col table-name ))
+            (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "验证错误"))))))
   
 
 ;; 验证
@@ -124,10 +126,53 @@
             (response/cors/jsexpr (hasheq 'status "ok"))
                                  
             (response/cors/options/400)))))
-;用户表接口
-(define (we-users
-
-   
 
 
+;; /api/users
+(define (web-users req)
+  (cond
+    [(equal? #"OPTIONS" (request-method req))
+     (response/cors/options/OK)]
+    [else
+     (define bindings (request-bindings req))
+     (define all-cols (get-all-cols "chips"))
+     (define pairs (check&get-bindings-list all-cols bindings))
+     (define header (request-headers req))
+     (define userToken (cdr (assoc 'auth header)))
+     (if (not (user-check-permission userToken "rootUser"))
+         (response/cors/options/400)
+         (cond
+           ;; getList
+           [(and (exists-binding? '_start bindings)
+                 (exists-binding? '_end bindings)
+                 (exists-binding? '_order bindings)
+                 (exists-binding? '_sort bindings))
+            (cond
+              [(null? pairs)
+               (let* ([ids (xitong-many-in-page "user"
+                                                (string->number (extract-binding/single '_start bindings))
+                                                (string->number (extract-binding/single '_end bindings))
+                                                (extract-binding/single '_sort bindings)
+                                                (extract-binding/single '_order bindings))]
+                      [hv (table-query-many "user" ids all-cols)])
+                 (response/cors/jsexpr hv (get-numbers-col "user")))]
+              [else
+               ;; contain filters
+               (let* ([ids (xitong-many-in-page "user"
+                                                (string->number (extract-binding/single '_start bindings))
+                                                (string->number (extract-binding/single '_end bindings))
+                                                (extract-binding/single '_sort bindings)
+                                                (extract-binding/single '_order bindings)
+                                                #:filter-pairs pairs)]
+                      [hv (table-query-many "user" ids all-cols)])
+                 (response/cors/jsexpr hv (get-numbers-col "user")))])]
+           [(assoc 'id pairs equal?)
+            ;; getMany
+            (let ([ids (map (lambda (v) (string->number v))
+                            (extract-bindings 'id bindings))]
+                  [cols (get-all-cols "user")])
+              (response/cors/jsexpr (table-query-many "user" ids cols)))]
+           [else
+            ;; getManyReference
+            (response/cors/options/OK)]))]))
 
