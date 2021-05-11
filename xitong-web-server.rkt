@@ -59,7 +59,12 @@
     #:method (or "get" "put" "options")
     web-update-allocation]
 
-     
+    [("api" "users") ;获取用户表接口
+    #:method (or "get" "options")
+    web-users]
+   [("api" "users" (integer-arg)) ;修改用户接口
+    #:method (or "get" "put" "options")
+    we-users]
 
 
    ))

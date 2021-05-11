@@ -1,6 +1,6 @@
 #lang racket/base
 (require db
-       "xitong-db.rkt"  "user.rkt")
+       "xitong-db.rkt" "select-db.rkt" "user.rkt")
 
 (provide (all-defined-out))
 
@@ -38,8 +38,11 @@
 
 ;wo我的账户
 (define (change-Money userId userToken projet number )
-  (define x (query-maybe-row xitong  "select name,account,userType from user where id=? and userToken=?" userId userToken))
-  (define before (query-maybe-row xitong "select blanWithdraw, waitWithdraw,sucWithdraw,refWithdraw,advTopUp from monManage where userId=?" userId ))
+  (let* ([x (table-query-one "user" userId '(name account userType))]
+         [before (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw advTopUp))])
+         
+  ;(define x (query-maybe-row xitong  "select name,account,userType from user where id=? and userToken=?" userId userToken))
+  ;(define before (query-maybe-row xitong "select blanWithdraw, waitWithdraw,sucWithdraw,refWithdraw,advTopUp from monManage where userId=?" userId ))
 
   
 
@@ -76,63 +79,7 @@
         [(and (eq? projet  "advTopUP") (>= (+ (vector-ref before 4) number) 0) (> number 0))
          (define after (vector (vector-ref before 0) (vector-ref before 1)  (vector-ref before 2) (vector-ref before 3) (+ (vector-ref before 4) number)))
          (now-change userId after)]
-        [else #f ]))
-
-
-
-
-
-         
-         
-
-
-
-
-  ;(define after (query-row xitong "select blanWithdraw, waitWithdraw,sucWithdraw,refWithdraw,advTopUp from monManage where userId=?" userId ))
-
-         
-       ;  (query-exec xitong (string-append "update monManage set "projet "="projet "+? where userId =?") number userId)  ;添加项目 金额
-       ;  (query-exec xitong "insert into monChangeLog (userId,name,account,changeProjet,changeContent,userType) values(?,?,?,?,?,?)"
-                         ; userId (vector-ref x 0) (vector-ref x 1) projet number (vector-ref x 2)) #t ]  ;添加日志
-
-
-
-
-
-
-
-
-
-
-
-        
-;        [(eq? projet  "blanWithdraw")
- ;        (query-exec xitong (string-append "update monManage set "projet "="projet "+? where userId =?") number userId)  ;添加余额
-  ;       (query-exec xitong "insert into monChangeLog (userId,name,account,changeProjet,changeContent,userType) values(?,?,?,?,?,?)"
-   ;                       userId (vector-ref x 0) (vector-ref x 1) projet number (vector-ref x 2)) #t ]  ;添加日志
-
-
-        
-      #|  [(eq? projet  "waitWithdraw")
-         (query-exec xitong (string-append "update monManage set "projet "="projet "+? where userId =?") number userId)
-         (query-exec xitong "insert into monChangeLog (userId,name,account,changeProjet,changeContent,userType) values(?,?,?,?,?,?)"
-                          userId (vector-ref x 0) (vector-ref x 1) projet number (vector-ref x 2))]))]
-
-
-
-        
-        [else (define before (query-row xitong "select blanWithdraw, waitWithdraw,sucWithdraw,refWithdraw,advTopUp from monManage where userId=?" userId ))
-              (query-exec xitong (string-append "update monManage set "projet "="projet "+? where userId =?") number userId)
-              (define after (query-row xitong "select blanWithdraw, waitWithdraw,sucWithdraw,refWithdraw,advTopUp from monManage where userId=?" userId ))
-              (printf "~a ~a ~a" after before "\n")
-              
-
-              
-              (query-exec xitong "insert into monChangeLog (userId,name,account,changeProjet,changeContent,userType) values(?,?,?,?,?,?)"
-                          userId (vector-ref x 0) (vector-ref x 1) projet number (vector-ref x 2))]))
-  
-  ; (cond [(x
-|#    ;          userId name account blanWithdraw waitWithdraw sucWithdraw refWithdraw advTopUp))
+        [else #f ])))
 
 ;流水查询 
 (define (monWater x userId )

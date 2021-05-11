@@ -44,3 +44,9 @@
 ;账目明细 返回#hasheq
 (define (get-monchangelog userId)
   (table-query-many "monChangeLog" #:id-name"userId" (list userId) '(changeProjet changeContent changeTime)))
+;发起提现
+;(define (post-waitWithdraw Amount userId)
+;  (let ([blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
+;        [wait (table-query-col  "monManage" "waitWithdraw"  userId "userId")]))
+;  (and )
+    
