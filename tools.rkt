@@ -107,8 +107,23 @@
 
        
     
-    
-        
+
+;; 字符转utf-8
+(define (string->%unicode s)
+  (let loop ([s s]
+             [index 0])
+    (cond
+      [(= index (string-length s)) ""]
+      [else
+       (let ([i (char->integer (string-ref s index))])
+         (if (> i 128)
+             (string-append "%u"
+                            (number->string i 16)
+                            (loop s (+ index 1)))
+             (string-append "%"
+                            (number->string i 16)
+                            (loop s (+ index 1)))))])))
+
                
 
 

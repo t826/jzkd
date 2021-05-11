@@ -60,30 +60,23 @@
     web-update-allocation]
 
 
-    ;; 获取用户表接口
-    [("api" "users")
+   ;; 获取用户表接口
+   [("api" "users")
     #:method (or "get" "options")
     web-users]
-    ;; 修改用户接口
-    #;[("api" "users" (integer-arg))
+   ;; 修改用户接口
+   [("api" "users" (integer-arg))
     #:method (or "put" "options")
     web-change-users]
+   ;; 增加用户
+   [("api" "users")
+    #:method (or "post" "options")
+    web-create-user]
+   ;; 删除用户
+   [("api" "users" (integer-arg))
+    #:method (or "delete" "options")
+    web-delete-user]
 
-
-
-
-
-
-
-
-
-
-   
-
- ;  [("api" "users") ;修改用户接口
-  ;  #:method (or "get" "put" "options")
-   ; we-users]
-   
 
 
    ))
@@ -95,19 +88,18 @@
 
 
 
-  ;; Setup The Servlet
-  (serve/servlet dispatcher
-                 #:command-line? #t
+;; Setup The Servlet
+(serve/servlet dispatcher
+               #:command-line? #t
                
-                 #:listen-ip #f
-                 #:port 5000
-                 #:servlet-path "/"
-                 #:servlet-regexp #rx""
-                 #:extra-files-paths (list (build-path "htdocs"))
-                 #:ssl? #f
-                 #:stateless? #t
-                 #:log-file "jzkd-web.log")
+               #:listen-ip #f
+               #:port 5000
+               #:servlet-path "/"
+               #:servlet-regexp #rx""
+               #:extra-files-paths (list (build-path "htdocs"))
+               #:ssl? #f
+               #:stateless? #t
+               #:log-file "jzkd-web.log")
 
 
 
-  
