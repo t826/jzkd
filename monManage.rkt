@@ -41,8 +41,7 @@
   (let* ([x (hash->list (table-query-one "user" userId '(name account userType)))]
          [before (hash->list (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw advTopUp)))])
     (cond [(not x)  #f ] ;管理账目流向
-        [(and (eq? projet  "blanWithdraw") (>= (+ (cdr (assoc 'blanWithdraw before)) number) 0))  ;判断余额是否够用
-         (define after (vector (+ (vector-ref before 0) number) (vector-ref before 1) (vector-ref before 2) (vector-ref before 3) (vector-ref before 4)))
+        [(and (eq? projet  "blanWithdraw") (>= (+ (cdr (assoc 'blanWithdraw before)) number) 0))  (define after (vector (+ (vector-ref before 0) number) (vector-ref before 1) (vector-ref before 2) (vector-ref before 3) (vector-ref before 4)))
          (now-change userId after)]
         [(and (eq? projet  "waitWithdraw") (>= (- (vector-ref before 0) number) 0) (> number 0))
          (define after (vector (- (vector-ref before 0) number)  (+ (vector-ref before 1) number) (vector-ref before 2) (vector-ref before 3) (vector-ref before 4)))

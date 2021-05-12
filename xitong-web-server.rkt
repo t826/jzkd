@@ -48,9 +48,9 @@
     #:method (or "get" "options")
     web-logs]
 
-   [("api" "checkcode") ;发送短信验证接口
-    #:method (or "pos" "options")
-    web-sendcode]
+   [("api" "sendcode") ;发送短信接口
+    #:method (or "post" "options")
+   web-sendcode]
 
    [("api" "allocations") ;基础配置信息接口
     #:method (or "get" "options")
@@ -59,7 +59,7 @@
     #:method (or "get" "put" "options")
     web-update-allocation]
 
-
+#|
    ;; 获取用户表接口
    [("api" "users")
     #:method (or "get" "options")
@@ -76,7 +76,7 @@
    [("api" "users" (integer-arg))
     #:method (or "delete" "options")
     web-delete-user]
-
+|#
 
 
    ))
