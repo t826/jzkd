@@ -145,7 +145,7 @@
      (define header (request-headers req))
      (define userToken (cdr (assoc 'auth header)))
      (if (not (user-check-permission userToken "rootUser"))
-         (response/cors/options/400)
+         (response/cors/options/401)
          (cond
            ;; getList
            [(and (exists-binding? '_start bindings)

@@ -21,7 +21,8 @@
   (response/full
    200 #"Okay"
    (current-seconds) TEXT/HTML-MIME-TYPE
-   (list (header #"Access-Control-Allow-Origin" #"*"))
+   (list (header #"Access-Control-Allow-Origin" #"*")
+         (header #"Access-Control-Allow-Headers" #"*"))
    (list (string->bytes/utf-8 t))))
 
 
@@ -35,6 +36,18 @@
          (header #"Access-Control-Allow-Methods" #"*"))
    (list (jsexpr->bytes (hash 'status "error"
                               'msg "找不到页面")))))
+
+
+
+(define (response/cors/options/401)
+  (response/full
+   401 #"Unauthorized"
+   (current-seconds) #"application/json"
+   (list (header #"Access-Control-Allow-Origin" #"*")
+         (header #"Access-Control-Allow-Headers" #"*")
+         (header #"Access-Control-Allow-Methods" #"*"))
+   (list (jsexpr->bytes (hash 'status "error"
+                              'msg "Unauthorized")))))
 
 
 (define (response/cors/options/OK)
