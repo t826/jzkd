@@ -90,23 +90,31 @@
 
 ;更新数据
 (define (table-update-one table-name #:id-name [id-name "id"] id lst) ;选择更新的表 给par类型list更新多个值 默认第二个参数"id"
- (define-values  (k v) (update->kv lst))
-  (apply query-exec (append
-                     (list xitong (string-append "update " table-name " set " k " where " id-name " = ? "))
-                     v (list id))))
+  (define-values  (k v) (update->kv lst))
+  (with-handlers ([exn:fail? (lambda (e) (writeln e) #f)])
+    (apply query-exec (append
+                       (list xitong (string-append "update " table-name " set " k " where " id-name " = ? "))
+                       v (list id)))
+    #t))
 
 ;删除一行 传id
 (define (table-delete-one table id )
-  (query-exec xitong (string-append "delete from "table" where id =?") id))
+  (with-handlers ([exn:fail? (lambda (e) (writeln e) #f)])
+    (query-exec xitong (string-append "delete from "table" where id =?") id)
+    #t))
 ;删除多行 传多个id
-(define (table-delete-many  table list-id )
-  (apply query-exec (append
-                     (list
-                     xitong (string-append "delete from "table" where id in("(strappend (length list-id) "?" )")"))
-                     list-id )))
+(define (table-delete-many  table list-id)
+  (with-handlers ([exn:fail? (lambda (e) (writeln e) #f)])
+    (apply query-exec (append
+                       (list
+                        xitong (string-append "delete from "table" where id in("(strappend (length list-id) "?" )")"))
+                       list-id ))
+    #t))
 ;删除整个表内的数据
 (define (table-delete-all  table )
-  (query-exec xitong (string-append "delete from "table)))
+  (with-handlers ([exn:fail? (lambda (e) (writeln e) #f)])
+    (query-exec xitong (string-append "delete from "table))
+    #t))
 
 
 

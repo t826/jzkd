@@ -66,8 +66,12 @@
     web-users]
    ;; 修改用户接口
    [("api" "users" (integer-arg))
+    #:method (or "get" "options")
+    web-user]
+   ;; 修改用户接口
+   [("api" "users" (integer-arg))
     #:method (or "put" "options")
-    web-change-users]
+    web-modify-user]
    ;; 增加用户
    [("api" "users")
     #:method (or "post" "options")

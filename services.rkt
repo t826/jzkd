@@ -181,3 +181,53 @@
             ;; getManyReference
             (response/cors/options/OK)]))]))
 
+;; getOne: /api/useres/{id}
+(define (web-user req id)
+  (cond
+    [(equal? #"OPTIONS" (request-method req))
+     (response/cors/options/OK)]
+    [else
+     (response/cors/jsexpr (table-query-row "user" id))]))
+
+;; moidfy: /api/users/{id}
+(define (web-modify-user req id)
+  (cond
+    [(equal? #"OPTIONS" (request-method req))
+     (response/cors/options/OK)]
+    [else
+     (let* ([header (request-headers req)]
+            [userToken (cdr (assoc 'auth header))])
+       (if (not (user-check-permission userToken "rootUser"))
+           (response/cors/options/401)
+           (let* ([jdata (request-post-data/raw req)]
+                  [jsexp (bytes->jsexpr jdata)])
+             (if (table-update-one "user" id (hash->list jsexp))
+                 (response/cors/jsexpr (table-query-row "user" id))
+                 (response/cors/options/NotFound)))))]))
+
+;; create: /api/users
+(define (web-create-user req)
+  (cond
+    [(equal? #"OPTIONS" (request-method req))
+     (response/cors/options/OK)]
+    [else
+     (let* ([jdata (request-post-data/raw req)]
+            [jsexp (bytes->jsexpr jdata)]
+            [pairs (remove '(createDate . "") (hash->list jsexp))])
+       (table-insert-one "user" pairs)
+       (define id (table-query-col "user" "id" (hash-ref jsexp 'account) "account"))
+       (response/cors/jsexpr (table-query-one "user" id
+                                              (map
+                                               (lambda (s)
+                                                 (string->symbol s))
+                                               (get-mame-cols "user")))))]))
+
+;; create
+(define (web-delete-user req id)
+  (cond
+    [(equal? #"OPTIONS" (request-method req))
+     (response/cors/options/OK)]
+    [else
+     (if (table-delete-one "user" id)
+         (response/cors/options/OK)
+         (response/cors/options/400))]))
