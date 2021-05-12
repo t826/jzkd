@@ -25,10 +25,10 @@
 
 ;用户登录接口
 
-(define (login lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255"))
+(define (login boole lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255"))
   (define new-lst (remove (assoc 'ipLog lst) lst))
     (define user (xitong-table "user" new-lst ))   ;验证账户
-      (if user
+      (if (and boole user)
           (begin
            (table-insert-one "loginLog"  (list    ;添加登录日志表
                                            (cons 'userId (vector-ref user 0)) ;userid 

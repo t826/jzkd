@@ -47,9 +47,7 @@
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
              [checkCode (hash-ref jdata 'checkCode)]
-             [user (login  (list (cons 'account  account )
-                                 (cons 'password  password )
-                                 (cons 'ipLog ip)))])
+             [user (login (checkcode account checkCode) (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
         (if user
             (response/cors/jsexpr (hasheq 'status "ok"
                                           'data user))
