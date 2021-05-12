@@ -71,6 +71,15 @@
    (list (jsexpr->bytes (hash 'status "ok")))))
 
 
+(define (response/cors/options/NotFound)
+  (response/full
+   404 #"Not Found"
+   (current-seconds) #""
+   (list (header #"Access-Control-Allow-Origin" #"*")
+         (header #"Access-Control-Allow-Headers" #"*"))
+   (list)))
+
+
 (define (response/cors/delete/400)
   (response/full
    400 #"Bad Request"
