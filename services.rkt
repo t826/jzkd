@@ -37,7 +37,7 @@
              (response/cors/jsexpr (hasheq 'status "ok"))
              (response/cors/jsexpr (hasheq 'error "error"))))))
 
-;; 登陆
+;; 用户接口登陆
 (define (web-login req)
   (if (equal? #"OPTIONS" (request-method req))
       (response/cors/options/OK)
@@ -47,12 +47,16 @@
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
              [checkCode (hash-ref jdata 'checkCode)]
-             [user (login (checkcode account checkCode) (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
-        (if user
-            (response/cors/jsexpr (hasheq 'status "ok"
-                                          'data user))
-            (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "账号或密码错误"))))))
+            ; [boole (checkcode account checkCode)]
+             [boole #t]
+             [user (login boole (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
+        (cond [(not boole)(response/cors/jsexpr (hasheq 'status "error" 'msg "验证码错误"))]
+            [user (response/cors/jsexpr (hasheq 'status "ok" 'data user))]
+            [else (response/cors/jsexpr (hasheq 'status "error" 'msg "账号或密码错误"))]))))
+
+
+
+
 ;; 注册
 (define (web-register req)
   (let* ([ip (request-host-ip req)]
