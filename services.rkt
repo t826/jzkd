@@ -26,6 +26,17 @@
 (define (web-index req)
   (response/cors/template (include-template "dist/index.html")))
 
+;;发送短信接口
+(define (web-sendcode req)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+      (let* ([pdata (request-post-data/raw req)]
+             [jdata (with-input-from-bytes pdata (λ () (read-json)))]
+             [account (hash-ref jdata 'account)])
+        (if (sendcode account)
+             (response/cors/jsexpr (hasheq 'status "ok"))
+             (response/cors/jsexpr (hasheq 'error "error"))))))
+
 ;; 登陆
 (define (web-login req)
   (if (equal? #"OPTIONS" (request-method req))
@@ -35,6 +46,7 @@
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
+             [checkCode (hash-ref jdata 'checkCode)]
              [user (login  (list (cons 'account  account )
                                  (cons 'password  password )
                                  (cons 'ipLog ip)))])
@@ -51,8 +63,8 @@
          [name (hash-ref jdata 'username)]
          [account (hash-ref jdata 'account)]
          [password (hash-ref jdata 'password)]
-         [checkCode (hash-ref jdata 'password)]
-         [ad (addUser  (web-checkcode)
+         [checkCode (hash-ref jdata 'checkCode)]
+         [ad (addUser  (checkcode account checkCode)
                        (list (cons 'name  name)
                              (cons 'account  account )
                              (cons 'password  password )
@@ -62,6 +74,7 @@
                                       'data ad ))
         (response/cors/jsexpr (hasheq 'status "error"
                                       'msg "账号已存在")))))
+
 
 ;; 系统的三个日志表的 loginlogs || monchangelogs || operationLog
 (define (web-logs req)
