@@ -46,11 +46,11 @@
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
-            ; [checkCode (hash-ref jdata 'checkCode)]
-            ; [boole (checkcode account checkCode)]
-             [boole #t]
-             [user (login boole (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
-        (cond [(not boole)(response/cors/jsexpr (hasheq 'status "error" 'msg "验证码错误"))]
+             [checkCode (hash-ref jdata 'checkCode)]
+             [boole (checkcode account checkCode)]
+             ;[boole #t]
+             [user (login checkCode (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
+        (cond [(not boole)(response/cors/jsexpr (hasheq 'status "error" 'msg "验证码与账号未适配"))]
             [user (response/cors/jsexpr (hasheq 'status "ok" 'data user))]
             [else (response/cors/jsexpr (hasheq 'status "error" 'msg "账号或密码错误"))]))))
 
@@ -58,7 +58,7 @@
 
 
 ;; 注册
-(define (web-register req)
+(define (web-rigester req)
   (let* ([ip (request-host-ip req)]
          [pdata (request-post-data/raw req)]
          [jdata (with-input-from-bytes pdata (λ () (read-json)))]
@@ -66,17 +66,16 @@
          [account (hash-ref jdata 'account)]
          [password (hash-ref jdata 'password)]
          [checkCode (hash-ref jdata 'checkCode)]
-         [invite-code (if (hash-ref jdata 'invite-code) (hash-ref jdata 'invite-code) #f)]
-         [ad (addUser  (checkcode account checkCode)
-                       (list (cons 'name  name)
+         [invite-code (hash-ref jdata 'invite-code #f)]
+         [boole (checkcode account checkCode)]
+         [ad (addUser boole  (list (cons 'name  name)
                              (cons 'account  account )
                              (cons 'password  password )
                              (cons 'ipLog ip)))])
-    (if ad  
-        (response/cors/jsexpr (hasheq 'status "ok"
-                                      'data ad ))
-        (response/cors/jsexpr (hasheq 'status "error"
-                                      'msg "账号已存在")))))
+      (cond [(not boole)(response/cors/jsexpr (hasheq 'status "error" 'msg "验证码与账号未适配"))]
+            [ad (response/cors/jsexpr (hasheq 'status "ok" 'data ad))]
+            [else (response/cors/jsexpr (hasheq 'status "error" 'msg "账号或密码错误"))])))
+
 
 
 ;; 系统的三个日志表的 loginlogs || monchangelogs || operationLog

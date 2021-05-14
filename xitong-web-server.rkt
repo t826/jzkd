@@ -28,7 +28,7 @@
    
    [("api" "rigester") ;注册接口
     #:method (or "post" "options")
-    web-register]
+    web-rigester]
 
    [("api" "auth") ;用户接口验证
     #:method (or "post" "options")

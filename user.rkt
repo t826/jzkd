@@ -24,7 +24,6 @@
 
 
 ;用户登录接口
-
 (define (login boole lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255"))
   (define new-lst (remove (assoc 'ipLog lst) lst))
     (define user (xitong-table "user" new-lst ))   ;验证账户
@@ -49,12 +48,85 @@
     (table-query-one "user"  id (list 'name 'id 'userToken  'avatar 'userType )) #f)))
     
   
-;用户我的主页接口
+;用户基本数据接口
 (define (myhome userToken)
   (define userId (table-query-col "user" "id" userToken "userToken")) ;
   (if userId 
       (select-join-table "user" "monManage" '(name account userType avatar) '(blanWithdraw  waitWithdraw sucWithdraw refWithdraw )"user.id=monManage.userId" (list userId)) #f))
        
+
+;-----------------------------------------------------------------------
+;;我的主页模块一
+
+;今日收入 返回一个值
+(define (today-income userId)
+ (query-value xitong (string-append "select sum( changeContent ) from monChangeLog  where userId = ? and date(changeTime) = curdate()" ) userId))
+;转发收入
+;累计收入 返回一个值
+(define (get-allmon userId)
+  (apply + (map (λ(x) (cdr x)) 
+  (hash->list (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw))))))
+;账户余额 返回一个值
+(define (get-blanWithdraw userId)
+  (table-query-col  "monManage" "blanWithdraw"  userId  "userId"))
+;团队贡献
+;金币金额
+
+
+
+;;用户我的主页模块二
+
+;发起提现
+(define (post-waitWithdraw Amount userToken)
+  (let* ([userId (table-query-col  "user" "id"  userToken "userToken")]
+        [blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
+        [wait (table-query-col  "monManage" "waitWithdraw"  userId "userId")])
+(cond [(and (> blan 0) (> Amount 0) (>= (- blan Amount)0) )
+       (table-update-one "monManage" #:id-name "userId" userId (list (cons 'blanWithdraw (- blan Amount)) (cons 'waitWithdraw  Amount))) ;余额转待提现
+       (table-insert-one "monChangeLog" (list (cons 'userId userId) (cons 'changeProjet "blanWithdraw") (cons 'changeContent  (- Amount)))) ;更新余额日志                 
+       (table-insert-one "monChangeLog" (list (cons 'userId userId) (cons 'changeProjet "waitWithdraw") (cons 'changeContent  Amount)))] ;更新待提现日志
+      [else #f])))
+       
+  
+;账目明细 返回#hasheq
+(define (get-monchangelog userId)
+  (table-query-many "monChangeLog" #:id-name"userId" (list userId) '(changeProjet changeContent changeTime)))
+;累积贡献
+;客服
+;常见问题
+
+;;用户我的主页模块三
+;我的上传
+;商务合作
+;投诉建议+
+;我的收藏
+
+;------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
