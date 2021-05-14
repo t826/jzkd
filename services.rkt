@@ -33,9 +33,9 @@
       (let* ([pdata (request-post-data/raw req)]
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
              [account (hash-ref jdata 'account)])
-        (if (sendcode account)
-             (response/cors/jsexpr (hasheq 'status "ok"))
-             (response/cors/jsexpr (hasheq 'error "error"))))))
+        (cond [(not (regexp-match? #px"^1[3-9]\\d{9}$" account)) (response/cors/jsexpr (hasheq 'error "account?"))]
+              [(sendcode account) (response/cors/jsexpr (hasheq 'status "ok"))]
+              [else (response/cors/jsexpr (hasheq 'error "error"))]))))
 
 ;; 用户接口登陆
 (define (web-login req)
@@ -46,7 +46,7 @@
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
              [account (hash-ref jdata 'account)]
              [password (hash-ref jdata 'password)]
-             [checkCode (hash-ref jdata 'checkCode)]
+            ; [checkCode (hash-ref jdata 'checkCode)]
             ; [boole (checkcode account checkCode)]
              [boole #t]
              [user (login boole (list (cons 'account  account ) (cons 'password  password) (cons 'ipLog ip)))])
@@ -66,6 +66,7 @@
          [account (hash-ref jdata 'account)]
          [password (hash-ref jdata 'password)]
          [checkCode (hash-ref jdata 'checkCode)]
+         [invite-code (if (hash-ref jdata 'invite-code) (hash-ref jdata 'invite-code) #f)]
          [ad (addUser  (checkcode account checkCode)
                        (list (cons 'name  name)
                              (cons 'account  account )

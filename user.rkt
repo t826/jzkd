@@ -68,33 +68,6 @@
 
 
 
-
-    
-
-;用户我的主页
-(define (myHome id userToken )
-  (if (key-check id userToken ) 
-  (let*
-      ([user (map (lambda (l1)
-                    (if (sql-null? l1) #f l1))
-                  (vector->list(query-row xitong"select id,account,name,myImg ,userCommission, userType,userToken from user where id =? and userToken =? "id userToken)))]           
-       [monManage (vector->list (query-row xitong"select blanWithdraw,waitWithdraw,sucWithdraw,refWithdraw from monManage where userId =? "id ))]
-       [monChangeLog (query-maybe-row xitong"select changeProjet, changeContent,changeTime from monChangeLog where userId =?"id)])    
-       (define userdata (make-hash))
-         (for ([i (list 'id  'account 'name 'myImg  'userCommission 'userType 'userToken)]
-               [j user])
-           (hash-set! userdata i j))
-    userdata)
-  #f))
-  
-   ; (printf "~a\n~a\n~a" user monManage monChangeLog)))
-
-
-
-  ;(map lambda(x y) (hash  
-;  (define allData (li3st user monManage monChangeLog))
-
-
 ;（以下为用户类型userType）
 ;  删除用户   delUser
 ;  普通用户   ordUser

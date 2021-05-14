@@ -34,9 +34,9 @@
     #:method (or "post" "options")
     web-auth]
    
-   [("api" "myhome") ;用户我的主页接口
+   [("api" "mymsg") ;用户基本信息接口
     #:method (or "post" "options")
-    web-myhome]
+    web-mymsg]
    
    [("api" "loginlogs") ;获取日志接口
     #:method (or "get" "options")
