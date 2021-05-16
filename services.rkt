@@ -41,7 +41,7 @@
 (define (web-login req)
   (if (equal? #"OPTIONS" (request-method req))
       (response/cors/options/OK)
-      (let* ([ip (request-host-ip req)]
+      (let* ([ip (request-client-ip req)]
              [pdata (request-post-data/raw req)]
              [jdata (with-input-from-bytes pdata (λ () (read-json)))]
              [account (hash-ref jdata 'account)]
@@ -59,7 +59,7 @@
 
 ;; 注册
 (define (web-rigester req)
-  (let* ([ip (request-host-ip req)]
+  (let* ([ip (request-client-ip req)]
          [pdata (request-post-data/raw req)]
          [jdata (with-input-from-bytes pdata (λ () (read-json)))]
          [name (hash-ref jdata 'username)]
@@ -189,7 +189,7 @@
                  (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))])]
            [(assoc 'id pairs equal?)
             ;; getMany
-            (let ([ids (map (lambda (v) (string->number v))
+            (let* ([ids (map (lambda (v) (string->number v))
                             (extract-bindings 'id bindings))]
                   [cols (get-all-cols "user")]
                   [hv (table-query-many "user" ids cols)])
