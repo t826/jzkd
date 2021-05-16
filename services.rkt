@@ -96,7 +96,8 @@
                                 (string->number  (extract-binding/single '_end binding)))) binding))
         (define ad (get-log table-name  userToken start end))
         (if ad
-            (response/cors/jsexpr ad (get-numbers-col table-name ))
+            (response/cors/jsexpr (hasheq 'data ad 'total (get-numbers-col table-name) 'status "ok"))
+        
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误"))))))
   
@@ -175,7 +176,7 @@
                                                 (extract-binding/single '_sort bindings)
                                                 (extract-binding/single '_order bindings))]
                       [hv (table-query-many "user" ids all-cols)])
-                 (response/cors/jsexpr hv (get-numbers-col "user")))]
+                 (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))]
               [else
                ;; contain filters
                (let* ([ids (xitong-many-in-page "user"
@@ -185,13 +186,15 @@
                                                 (extract-binding/single '_order bindings)
                                                 #:filter-pairs pairs)]
                       [hv (table-query-many "user" ids all-cols)])
-                 (response/cors/jsexpr hv (get-numbers-col "user")))])]
+                 (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))])]
            [(assoc 'id pairs equal?)
             ;; getMany
             (let ([ids (map (lambda (v) (string->number v))
                             (extract-bindings 'id bindings))]
-                  [cols (get-all-cols "user")])
-              (response/cors/jsexpr (table-query-many "user" ids cols)))]
+                  [cols (get-all-cols "user")]
+                  [hv (table-query-many "user" ids cols)])
+              (response/cors/jsexpr (hasheq 'data hv
+                                            'status "ok")))]
            [else
             ;; getManyReference
             (response/cors/options/OK)]))]))

@@ -7,7 +7,7 @@
 
 
 
-; 传表名 查指针 返回所有id  
+; 传表名 查指针 只能返回一列id 
 (define (xitong-table table-name [pair-lst #f]) ;列表 例 (xitong-table "user"  (list '(account ."17051006278") '(password . "safssf")))--->'#(53 "17051006278" "safssf")
   (define (result table-name pair-lst) 
   (define-values   (str-k lst-v) (update->kv pair-lst))    
@@ -19,6 +19,16 @@
       (result table-name pair-lst)
       (query-list xitong (string-append "select id from " table-name))))
 
+;查询返回多行值 传入查询条件[pair-list] 要返回的列名值col-lst  返回类型为hasheq
+(define (table-query-rows table col-lst pair-list) ;例 (table-query-rows "associate" '(userId shangjiUserId level) '((level . 2) (shangjiUserId . 28)))
+  (define-values   (str-k lst-v) (update->kv pair-list))
+  (define vs
+   (apply query-rows (append
+                     (list xitong (string-append"select "(query-eles col-lst)" from " table" where "(string-replace str-k "," " and ")))
+                      lst-v)))
+ (map (lambda (v)
+         (vector->hash col-lst v))
+       vs))
 
 
  ;查询一个指定页数的表 返回所有id 

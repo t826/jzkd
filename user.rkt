@@ -9,7 +9,7 @@
 ; 用户管理模块
 
 ;添加用户接口
-(define (addUser Boole pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ip ."255.255.255.255"))
+(define (addUser Boole pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ipLog ."255.255.255.255"))
  (define user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
   (if (or (not Boole) user-id)  #f
       (begin
@@ -19,7 +19,7 @@
                                       (cons 'userId  user-id) (assoc 'name pair-list ) (assoc 'account pair-list ) (cons 'ipLog (cdr(assoc 'ipLog pair-list ))) (cons 'userType (table-query-col "user" "userType" user-id))))
         (table-insert-one "monManage" (list  ;添加个人账目表
                                        (cons 'userId  user-id) (assoc 'name pair-list ) (assoc 'account pair-list ) (cons 'userType (table-query-col "user" "userType" user-id))))
-        (userToken user-id);更新秘钥
+        (userToken user-id)            ;更新秘钥
       (hash 'userToken (table-query-col "user" "userToken" user-id)))));返回秘钥
 
 

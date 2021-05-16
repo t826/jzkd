@@ -42,4 +42,20 @@
  ;今日收入 ；昨日收入
  ;会员好友
 
-    
+
+
+(define BS #"123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+(define BS-LEN (bytes-length BS))
+(define (random-code-n n)
+  (cond
+    [(= n 0) '()]
+    [else
+     (cons (bytes-ref BS (random BS-LEN))
+           (random-code-n (- n 1)))]))
+
+
+;(time (void (random-code-n 100000)))
+;cpu time: 1046 real time: 1018 gc time: 281
+;(time (void (random-code-n 1000000)))
+;cpu time: 671 real time: 682 gc time: 296
+

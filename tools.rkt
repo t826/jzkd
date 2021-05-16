@@ -3,8 +3,8 @@
 (provide (all-defined-out))
 (require racket/trace db)  (require db/util/datetime)  (require racket/date)
          
-
-(define (query-eles lst) ;symbol->string
+;symbol->string 
+(define (query-eles lst) ;'(userId shangjiUserId level)--->"userId,shangjiUserId,level"
   (cond
     [(null? lst) ""]
     [else
