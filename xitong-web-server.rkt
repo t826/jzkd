@@ -58,7 +58,10 @@
    [("api" "allocations" (integer-arg)) ;基础配置修改接口
     #:method (or "get" "put" "options")
     web-update-allocation]
-
+   
+   [("api" "monManage" ) ;财务管理
+    #:method (or "get" "options")
+    web-monManage]
 
    ;; 获取用户表接口
    [("api" "users")

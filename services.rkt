@@ -66,9 +66,9 @@
          [account (hash-ref jdata 'account)]
          [password (hash-ref jdata 'password)]
          [checkCode (hash-ref jdata 'checkCode)]
-         [invite-code (hash-ref jdata 'invite-code #f)]
+         [invite-id (hash-ref jdata 'invite-id #f)]
          [boole (checkcode account checkCode)]
-         [ad (addUser boole  (list (cons 'name  name)
+         [ad (addUser boole invite-id (list (cons 'name  name) 
                              (cons 'account  account )
                              (cons 'password  password )
                              (cons 'ipLog ip)))])
@@ -143,10 +143,66 @@
                                  
             (response/cors/options/400)))))
 
-;用户表接口
-;(define (we-users 
+;财务管理
+(define (web-monManage req)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+     (let* ([bindings (request-bindings req)]
+             [all-cols  (get-all-cols "monManage")]
+             [pairs (check&get-bindings-list all-cols bindings)]
+             [header (request-headers req)]
+             [userToken (cdr (assoc 'auth header))])
+        (if (not (user-check-permission userToken "rootUser"))
+         (response/cors/options/401)
+         (begin
+           (cond                           
+             ;; getList
+             [(and (exists-binding? '_start bindings)
+                   (exists-binding? '_end bindings)
+                   (exists-binding? '_order bindings)
+                   (exists-binding? '_sort bindings))
+              (cond
+                [(null? pairs)
+                 (let* ([ids (xitong-many-in-page "monManage"
+                                                  (string->number (extract-binding/single '_start bindings))
+                                                  (string->number (extract-binding/single '_end bindings))
+                                                  (extract-binding/single '_sort bindings)
+                                                  (extract-binding/single '_order bindings))]
+                        [hv (table-query-many "monManage" ids all-cols)])
+                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "monManage") 'status "ok")))]
+                [else
+                 ;; contain filters
+                 (let* ([ids (xitong-many-in-page "monManage"
+                                                  (string->number (extract-binding/single '_start bindings))
+                                                  (string->number (extract-binding/single '_end bindings))
+                                                  (extract-binding/single '_sort bindings)
+                                                  (extract-binding/single '_order bindings)
+                                                  #:filter-pairs pairs)]
+                        [hv (table-query-many "monManage" ids all-cols)])
+                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "monManage") 'status "ok")))])]
+                 [(assoc 'id pairs equal?)
+            ;; getMany
+            (let* ([ids (map (lambda (v) (string->number v))
+                            (extract-bindings 'id bindings))]
+                  [cols (get-all-cols "monManage")]
+                  [hv (table-query-many "monManage" ids cols)])
+              (response/cors/jsexpr (hasheq 'data hv
+                                            'status "ok")))]
+           [else
+            ;; getManyReference
+            (response/cors/options/OK)]))))))
 
-   
+
+
+
+
+
+
+
+
+
+
+
 
 
 ;; /api/users
@@ -199,6 +255,8 @@
             ;; getManyReference
             (response/cors/options/OK)]))]))
 
+
+  
 ;; getOne: /api/useres/{id}
 (define (web-user req id)
   (cond

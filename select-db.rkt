@@ -10,10 +10,10 @@
 ; 传表名 查指针 只能返回一列id 
 (define (xitong-table table-name [pair-lst #f]) ;列表 例 (xitong-table "user"  (list '(account ."17051006278") '(password . "safssf")))--->'#(53 "17051006278" "safssf")
   (define (result table-name pair-lst) 
-  (define-values   (str-k lst-v) (update->kv pair-lst))    
+  (define-values   (str-k str-and lst-v) (pair-lst->and pair-lst))   
   (apply query-maybe-row
          (append
-          (list xitong (string-append "select id,"(string-replace str-k "=?" "")" from " table-name " where "(string-replace str-k "," " and ")))
+          (list xitong (string-append "select id," str-k " from " table-name " where "str-and))
           lst-v)))
   (if pair-lst
       (result table-name pair-lst)

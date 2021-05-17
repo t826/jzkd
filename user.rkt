@@ -1,5 +1,5 @@
 #lang racket/base 
-(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt" ) 
+(require db "xitong-db.rkt" "crypto.rkt" "select-db.rkt" "associate.rkt" ) 
 (provide (all-defined-out))
 ;验证秘钥
 (define (key-check id userToken ) ;返回 #t或#f
@@ -9,37 +9,39 @@
 ; 用户管理模块
 
 ;添加用户接口
-(define (addUser Boole pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ipLog ."255.255.255.255"))
+(define (addUser Boole invite-id pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ipLog ."255.255.255.255"))
  (define user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
   (if (or (not Boole) user-id)  #f
       (begin
+        
         (table-insert-one "user" (remove (assoc 'ipLog pair-list ) pair-list)) ;去ip项 创建用户表
         (set!  user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
-        (table-insert-one "loginLog" (list  ;添加登录日志表
-                                      (cons 'userId  user-id) (assoc 'name pair-list ) (assoc 'account pair-list ) (cons 'ipLog (cdr(assoc 'ipLog pair-list ))) (cons 'userType (table-query-col "user" "userType" user-id))))
+        (when invite-id (inserte-invite user-id invite-id)) ;获取注册用户id后建立分级代理层
         (table-insert-one "monManage" (list  ;添加个人账目表
                                        (cons 'userId  user-id) (assoc 'name pair-list ) (assoc 'account pair-list ) (cons 'userType (table-query-col "user" "userType" user-id))))
         (userToken user-id)            ;更新秘钥
       (hash 'userToken (table-query-col "user" "userToken" user-id)))));返回秘钥
 
 
-;用户登录接口
-(define (login boole lst)   ; '((account . "187654321") (password . "sdwe4545") (ipLog . "255.255.255.255"))
-  (define new-lst (remove (assoc 'ipLog lst) lst))
-    (define user (xitong-table "user" new-lst ))   ;验证账户
-      (if (and boole user)
-          (begin
-           (table-insert-one "loginLog"  (list    ;添加登录日志表
-                                           (cons 'userId (vector-ref user 0)) ;userid 
-                                           (cons 'name (table-query-col "user" "name" (vector-ref user 0))) ;name
-                                           (assoc 'account lst)
-                                           (assoc 'ipLog lst)
-                                           (cons 'userType (table-query-col "user" "userType" (vector-ref user 0)))))
-            (userToken (vector-ref user 0)) ;更新秘钥
-           (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0))
-                 'userType  (table-query-col "user" "userType" (vector-ref user 0))
-                 'adv_background_name (table-query-col "allocation" "adv_background_name" (list-ref (xitong-table "allocation") 0)))) ;返回秘钥
-          #f))
+;用户登录接口 返回hash 
+(define (login boole lst)   ; '((account . "18666227042") (password . "sdwe4545") (ipLog . "255.255.255.255"))
+  (let* ([ new-lst (remove (assoc 'ipLog lst) lst)]
+         [ user  (xitong-table "user"  (list (assoc 'account lst)))]
+         [ userture? (equal? (table-query-col "user" "account" (cdr(assoc 'account lst)) "account") (cdr(assoc 'account lst)))];验证账户
+         [login-user (xitong-table "user"  new-lst)]
+         [disabledUser (equal? (table-query-col "user" "userType" (cdr(assoc 'account lst)) "account") "disabledUser")])
+    (cond [(not userture?) #f] ;添加登录日志表
+          [disabledUser #f]
+          [(not login-user) (add-longlog user lst "密码错误")]
+          [(not boole) (add-longlog user lst "验证码错误")]
+          [else (add-longlog user lst "登录成功")])
+            (if (and boole userture? (not disabledUser))
+             (begin    
+               (userToken (vector-ref user 0)) ;更新秘钥
+               (hash 'userToken (table-query-col "user" "userToken" (vector-ref user 0))
+                     'userType  (table-query-col "user" "userType" (vector-ref user 0))
+                     'adv_background_name (table-query-col "allocation" "adv_background_name" (list-ref (xitong-table "allocation") 0)))) ;返回秘钥
+             #f)))
 
 ;用户验证接口
 (define (check-user userToken)
@@ -103,7 +105,14 @@
 
 ;------------------------------------------------------------------------------------------
 
-
+;添加登录日志功能
+(define (add-longlog user lst login_msg)
+    (table-insert-one "loginLog"  (list (cons 'userId (vector-ref user 0)) ;userid           
+                                           (cons 'name (table-query-col "user" "name" (vector-ref user 0))) ;name
+                                           (assoc 'account lst)
+                                           (assoc 'ipLog lst)
+                                           (cons 'userType (table-query-col "user" "userType" (vector-ref user 0))) 
+                                           (cons 'login_msg login_msg ))))
 
 
 

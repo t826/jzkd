@@ -1,7 +1,7 @@
 #lang racket/base
 
+(require racket/trace db db/util/datetime racket/date  )
 (provide (all-defined-out))
-(require racket/trace db)  (require db/util/datetime)  (require racket/date)
          
 ;symbol->string 
 (define (query-eles lst) ;'(userId shangjiUserId level)--->"userId,shangjiUserId,level"
@@ -108,7 +108,7 @@
        
     
 
-;; 字符转utf-8
+;; 字符转utf-8 发短信用
 (define (string->%unicode s)
   (let loop ([s s]
              [index 0])
@@ -123,8 +123,18 @@
              (string-append "%"
                             (number->string i 16)
                             (loop s (+ index 1)))))])))
+;and条件查询用 
+(define (pair-lst->and pair-lst)
+  (let* ([k (map (λ(x)  (symbol->string (car x))) pair-lst) ]   
+         [v  (map (λ(x) (cdr x)) pair-lst)])
+    (define(key-str k) 
+      (cond [(null? (cdr k)) (car k)]
+            [else (string-append  (car k) "," (key-str (cdr k)))]))
+    (define(str-and k) 
+      (cond [(null? (cdr k)) (string-append (car k) "=? ")]
+            [else (string-append (car k) "=? and " (str-and (cdr k))) ]))
+    (values (key-str k)  (str-and k)  v)))
 
-               
 
 
 
