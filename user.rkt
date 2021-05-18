@@ -60,6 +60,7 @@
 ;-----------------------------------------------------------------------
 ;;我的主页模块一
 
+
 ;今日收入 返回一个值
 (define (today-income userId)
  (query-value xitong (string-append "select sum( changeContent ) from monChangeLog  where userId = ? and date(changeTime) = curdate()" ) userId))

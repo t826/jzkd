@@ -41,7 +41,7 @@
 (date-display-format 'iso-8601)
 
 (define (sql-null->#f k)
-  (cond [(sql-null? k) #f]
+  (cond [(sql-null? k) '()]
         [(sql-timestamp? k)
          (date->string (sql-datetime->srfi-date k) #t)]
         [else k]))

@@ -16,7 +16,8 @@
          "select-db.rkt"
          "user.rkt"
          "home.rkt"
-         "xitong-db.rkt")
+         "xitong-db.rkt"
+         "associate.rkt")
 
 (provide (all-defined-out))
 
@@ -34,6 +35,21 @@
                                           'msg "验证错误")))))
 
 
+(define (web-set-invite-id req)
+  (let* ([binding (request-bindings req)]
+         [header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken") ]
+         [shangji_id (if (exists-binding? 'shangji_id binding) (extract-binding/single 'shangji_id binding) #f)])
+    (displayln userId)  (displayln shangji_id)  
+       (if (and userToken shangji_id) (begin 
+           (if (inserte-invite2 userId (string->number shangji_id ))
+           (response/cors/jsexpr (hasheq 'status "ok"))
+           (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "该id为下级代理"))))
+           (response/cors/jsexpr (hasheq 'status "error"
+                                          'msg "该id为下级代理")))))
+           
 
 ;;分销模块
 

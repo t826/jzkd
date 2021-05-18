@@ -163,13 +163,14 @@
                    (exists-binding? '_sort bindings))
               (cond
                 [(null? pairs)
-                 (let* ([ids (xitong-many-in-page "monManage"
+                 (let* ([ids (xitong-many-in-page "user"
                                                   (string->number (extract-binding/single '_start bindings))
                                                   (string->number (extract-binding/single '_end bindings))
                                                   (extract-binding/single '_sort bindings)
                                                   (extract-binding/single '_order bindings))]
-                        [hv (table-query-many "monManage" ids all-cols)])
-                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "monManage") 'status "ok")))]
+                        [hv (select-join-table "user" "monmanage" '(id account name userType)  all-cols "user.id=monManage.userId" ids )])
+                       ; [hv (table-query-many "monManage" ids all-cols)])
+                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))]
                 [else
                  ;; contain filters
                  (let* ([ids (xitong-many-in-page "monManage"
@@ -178,14 +179,16 @@
                                                   (extract-binding/single '_sort bindings)
                                                   (extract-binding/single '_order bindings)
                                                   #:filter-pairs pairs)]
-                        [hv (table-query-many "monManage" ids all-cols)])
-                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "monManage") 'status "ok")))])]
+                        [hv (select-join-table "user" "monmanage" '(id account name userType)  all-cols "user.id=monManage.userId" ids )])
+                       ; [hv (table-query-many "monManage" ids all-cols)])
+                   (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))])]
                  [(assoc 'id pairs equal?)
             ;; getMany
             (let* ([ids (map (lambda (v) (string->number v))
                             (extract-bindings 'id bindings))]
                   [cols (get-all-cols "monManage")]
-                  [hv (table-query-many "monManage" ids cols)])
+                  [hv (select-join-table "user" "monmanage" '(id account name userType)  all-cols "user.id=monManage.userId" ids )])
+                 ; [hv (table-query-many "monManage" ids cols)])
               (response/cors/jsexpr (hasheq 'data hv
                                             'status "ok")))]
            [else

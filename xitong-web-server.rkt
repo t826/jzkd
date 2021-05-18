@@ -62,6 +62,10 @@
    [("api" "monManage" ) ;财务管理
     #:method (or "get" "options")
     web-monManage]
+   
+   [("api" "set-invite-id" ) ;填写上级id
+    #:method (or "get" "options")
+    web-set-invite-id]
 
    ;; 获取用户表接口
    [("api" "users")
