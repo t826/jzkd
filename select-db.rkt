@@ -1,6 +1,7 @@
 #lang racket/base
-(require racket/trace) (provide (all-defined-out))(require racket/string) 
+(require racket/trace racket/vector) (provide (all-defined-out))(require racket/string) 
 (require db
+         racket/port
          "tools.rkt"
          "tools2.rkt"
          "xitong-db.rkt")
@@ -150,8 +151,42 @@
                  (list start (- end start))))))]
     [else
      (query-list xitong
-                 (string-append "SELECT id FROM "table-name " ORDER BY " sort-col " " order
+                 (string-append "SELECT id FROM "table-name " ORDER BY " sort-col " "  order
                                 " LIMIT ?, ?")
                  (number->string start)
                  (number->string (- end start)))]))
 
+;----------------------------------------------------
+;分销查询工具 
+(define (get-level-all ids)
+  (for/list ([id ids]) id
+    (define (table-query-one-as)
+    (define  (query-one-as  )
+      (query xitong "select u.id , u.account , u.name , u.shangji_id , u2.name shangji_name, u2.account shangji_account from user u
+inner join user u2 on u2.id = u.shangji_id where  u.id = ? "id))
+     (cond [(null? (rows-result-rows (query-one-as)))  (query xitong "select id,account,  name , shangji_id from user where id=?"id)]
+           [else (query-one-as )]))             
+    (define (table-query-one-as2 )
+      (query xitong "select u2.userId ,u2.level, u3.name ,u3.account from user u inner join associate u2 on u2.shangjiUserId = u.id
+inner join user u3 on  u3.id = u2.userId where u.id =? " id))
+  
+    
+    (define (get-all-level pairs)
+      (let* ([k-lst (map (λ (k) (string->symbol (cdr (assoc 'name  k)))) (rows-result-headers pairs))]
+             [vs (rows-result-rows pairs)])
+        (cond [(null? vs) null]
+              [(eq? (length vs) 1) (list (make-hasheq (for/list ([k k-lst] [v (car vs)]) (cons k v))))]             
+              [else (map (λ (group) (make-hasheq group))     
+                    (map (λ (v-vec) 
+                           (let loop ([star 0]
+                                      [end (- (length  k-lst) 1 ) ]
+                                      [k-lst k-lst])
+                             (cond [(eq? star  end) (list (cons (car k-lst) (vector-ref v-vec end)))]
+                                   [else  (apply cons (list  (cons (car k-lst) (vector-ref v-vec star)) (loop  (+ star 1) end (cdr k-lst))))
+                                          ])))vs))])))
+
+
+    
+               (define result (car(get-all-level (table-query-one-as))))
+               (hash-set! result  'xiaji (get-all-level (table-query-one-as2)))
+               result))

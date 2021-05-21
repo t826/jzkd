@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/trace db db/util/datetime racket/date  )
+(require racket/trace db db/util/datetime racket/date  racket/port) 
 (provide (all-defined-out))
          
 ;symbol->string 
@@ -136,6 +136,11 @@
     (values (key-str k)  (str-and k)  v)))
 
 
+;; string -> symbol
+(define read-from-string
+  (lambda (s)
+    (with-input-from-string s
+      (lambda () (read)))))
 
 
 

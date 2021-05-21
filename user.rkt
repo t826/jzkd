@@ -9,18 +9,16 @@
 ; 用户管理模块
 
 ;添加用户接口
-(define (addUser Boole invite-id pair-list) ; (list '(name ."张世涛"） '(account ."17051006218") '(password . "safssf")  '(ipLog ."255.255.255.255"))
- (define user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
-  (if (or (not Boole) user-id)  #f
+(define (addUser Boole invite-id pair-list)  ; (list '(name ."张世涛") '(account ."17051006218") '(password . "safssf")) 
+ (define user-id (null?(table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" )))
+  (if (and Boole (not user-id))
       (begin
-        
-        (table-insert-one "user" (remove (assoc 'ipLog pair-list ) pair-list)) ;去ip项 创建用户表
+        (table-insert-one "user" pair-list) ;去ip项 创建用户表
         (set!  user-id (table-query-col "user" "id" (cdr (assoc 'account pair-list)) "account" ))
         (when invite-id (inserte-invite user-id invite-id)) ;获取注册用户id后建立分级代理层
-        (table-insert-one "monManage" (list  ;添加个人账目表
-                                       (cons 'userId  user-id) (assoc 'name pair-list ) (assoc 'account pair-list ) (cons 'userType (table-query-col "user" "userType" user-id))))
+        (table-insert-one "monManage" (list (cons 'userId  user-id)))  ;添加个人账目表
         (userToken user-id)            ;更新秘钥
-      (hash 'userToken (table-query-col "user" "userToken" user-id)))));返回秘钥
+      (hash 'userToken (table-query-col "user" "userToken" user-id))) #f));返回秘钥 
 
 
 ;用户登录接口 返回hash 

@@ -59,8 +59,7 @@
 
 ;; 注册
 (define (web-rigester req)
-  (let* ([ip (request-client-ip req)]
-         [pdata (request-post-data/raw req)]
+  (let* ([pdata (request-post-data/raw req)]
          [jdata (with-input-from-bytes pdata (λ () (read-json)))]
          [name (hash-ref jdata 'username)]
          [account (hash-ref jdata 'account)]
@@ -70,8 +69,7 @@
          [boole (checkcode account checkCode)]
          [ad (addUser boole invite-id (list (cons 'name  name) 
                              (cons 'account  account )
-                             (cons 'password  password )
-                             (cons 'ipLog ip)))])
+                             (cons 'password  password )))])
       (cond [(not boole)(response/cors/jsexpr (hasheq 'status "error" 'msg "验证码与账号未适配"))]
             [ad (response/cors/jsexpr (hasheq 'status "ok" 'data ad))]
             [else (response/cors/jsexpr (hasheq 'status "error" 'msg "账号或密码错误"))])))
@@ -195,8 +193,68 @@
             ;; getManyReference
             (response/cors/options/OK)]))))))
 
-
-
+;分销树状图
+(define (web-associate req)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+     (let* ([bindings (request-bindings req)]
+             [all-cols  (get-all-cols "monManage")]
+             [pairs (check&get-bindings-list all-cols bindings)]
+             [header (request-headers req)]
+             [userToken (cdr (assoc 'auth header))])
+       (display userToken)
+        (if (not (user-check-permission userToken "rootUser"))
+         (response/cors/options/401)
+         (begin                       
+          (cond
+           ;; getList
+           [(and (exists-binding? '_start bindings)
+                 (exists-binding? '_end bindings)
+                 (exists-binding? '_order bindings)
+                 (exists-binding? '_sort bindings))
+            (cond
+            [(null? pairs)
+             (let* ([ids (xitong-many-in-page "user"
+                                              (string->number (extract-binding/single '_start bindings))
+                                              (string->number (extract-binding/single '_end bindings))
+                                              (extract-binding/single '_sort bindings)
+                                              (extract-binding/single '_order bindings))]
+                    [hv (get-level-all ids )])
+               (response/cors/jsexpr (hasheq 'data hv 'total (get-numbers-col "user") 'status "ok")))]
+            [else
+               ;; contain filters
+               (let* ([ids (xitong-many-in-page "user"
+                                                (string->number (extract-binding/single '_start bindings))
+                                                (string->number (extract-binding/single '_end bindings))
+                                                (extract-binding/single '_sort bindings)
+                                                (extract-binding/single '_order bindings)
+                                                #:filter-pairs pairs)]
+                       [hv (get-level-all ids )])
+               (response/cors/jsexpr (hasheq 'data hv 'total (length ids) 'status "ok")))])]
+            [(assoc 'id pairs equal?)
+            ;; getMany
+            (let* ([ids (map (lambda (v) (string->number v))
+                            (extract-bindings 'id bindings))]
+                  [cols (get-all-cols "user")]
+                  [hv (get-level-all ids )])
+              (response/cors/jsexpr (hasheq 'data hv
+                                            'status "ok")))]
+            [else
+            ;; getManyReference
+            (response/cors/options/OK)]))))))
+;分销树状图获取一个id
+(define (web-associate-one req id)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))])
+    (cond
+      [(not (user-check-permission userToken "rootUser"))
+       (response/cors/options/401)]
+      [(equal? #"OPTIONS" (request-method req))
+       (response/cors/options/OK)]
+      [else
+       (response/cors/jsexpr (get-level-all  (list id)))])))
+                   
+            
 
 
 

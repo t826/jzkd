@@ -40,15 +40,14 @@
          [header (request-headers req)]
          [userToken (cdr (assoc 'auth header))]
          [userId (table-query-col  "user" "id"  userToken "userToken") ]
-         [shangji_id (if (exists-binding? 'shangji_id binding) (extract-binding/single 'shangji_id binding) #f)])
+         [shangji_id
+          (table-query-col  "user" "id" (string->number(extract-binding/single 'shangji_id binding)))])
     (displayln userId)  (displayln shangji_id)  
-       (if (and userToken shangji_id) (begin 
-           (if (inserte-invite2 userId (string->number shangji_id ))
+       (if (and userId shangji_id (not (eq? userId  shangji_id)) (inserte-invite2 userId  shangji_id ))
            (response/cors/jsexpr (hasheq 'status "ok"))
            (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "该id为下级代理"))))
-           (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "该id为下级代理")))))
+         
            
 
 ;;分销模块

@@ -16,7 +16,6 @@
          "app-services.rkt"
          "checkCode.rkt")
 
-
 ;;; Dispatches
 (define-values (dispatcher url)
   (dispatch-rules
@@ -63,7 +62,14 @@
     #:method (or "get" "options")
     web-monManage]
    
-   [("api" "set-invite-id" ) ;填写上级id
+     [("api" "allociate" ) ;分销树状图
+    #:method (or "get" "options")
+    web-associate]
+      [("api" "allociate" (integer-arg)) ;分销树状图获取一个
+    #:method (or "get" "options")
+    web-associate-one]
+    
+   [("api" "set-invite-id" ) ;用户主页填写上级id
     #:method (or "get" "options")
     web-set-invite-id]
 
