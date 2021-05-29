@@ -46,6 +46,10 @@
    [("api" "operationlogs") 
     #:method (or "get" "options")
     web-logs]
+   
+   [("api" "commission_logs") ;获取佣金日志接口
+    #:method (or "get" "options")
+    web-commission_log]
 
    [("api" "sendcode") ;发送短信接口
     #:method (or "post" "options")
@@ -72,6 +76,11 @@
    [("api" "set-invite-id" ) ;用户主页填写上级id
     #:method (or "get" "options")
     web-set-invite-id]
+   
+   [("api" "get-all-level" ) ;用户下级代理id
+    #:method (or "get" "options")
+    web-get-all-level]
+   
 
    ;; 获取用户表接口
    [("api" "users")

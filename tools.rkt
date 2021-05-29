@@ -142,6 +142,15 @@
     (with-input-from-string s
       (lambda () (read)))))
 
+(define (string-index hay needle)
+  (define n (string-length needle))
+  (define h (string-length hay))
+  (and (<= n h) ; if the needle is longer than hay, then the needle can not be found
+       (for/or ([i (- h n -1)]
+                #:when (string=? (substring hay i (+ i n)) needle))
+         i)))
+
+
 
 
      

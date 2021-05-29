@@ -84,7 +84,7 @@
 (define (get-mame-cols table-name)
   (query-list xitong "select Column_name from information_schema.COLUMNS where TABLE_NAME = ?" table-name))
 ;根据列统计个数
-(define (get-numbers-col table-name [col "id"])
+(define (get-numbers-col table-name [col "id"] )
    (query-value xitong (string-append "select count(" col ") from "table-name)))
 ;根据某列相加求和 pair-lst为筛选条件
 #;(define (get-sum-col table-name  col pair-lst)
@@ -102,6 +102,7 @@
 ;更新数据
 (define (table-update-one table-name #:id-name [id-name "id"] id lst) ;选择更新的表 给par类型list更新多个值 默认第二个参数"id"
   (define-values  (k v) (update->kv lst))
+  
   (with-handlers ([exn:fail? (lambda (e) (writeln e) #f)])
     (apply query-exec (append
                        (list xitong (string-append "update " table-name " set " k " where " id-name " = ? "))
@@ -169,8 +170,6 @@ inner join user u2 on u2.id = u.shangji_id where  u.id = ? "id))
     (define (table-query-one-as2 )
       (query xitong "select u2.userId ,u2.level, u3.name ,u3.account from user u inner join associate u2 on u2.shangjiUserId = u.id
 inner join user u3 on  u3.id = u2.userId where u.id =? " id))
-  
-    
     (define (get-all-level pairs)
       (let* ([k-lst (map (λ (k) (string->symbol (cdr (assoc 'name  k)))) (rows-result-headers pairs))]
              [vs (rows-result-rows pairs)])
@@ -184,9 +183,16 @@ inner join user u3 on  u3.id = u2.userId where u.id =? " id))
                              (cond [(eq? star  end) (list (cons (car k-lst) (vector-ref v-vec end)))]
                                    [else  (apply cons (list  (cons (car k-lst) (vector-ref v-vec star)) (loop  (+ star 1) end (cdr k-lst))))
                                           ])))vs))])))
-
-
-    
                (define result (car(get-all-level (table-query-one-as))))
                (hash-set! result  'xiaji (get-all-level (table-query-one-as2)))
                result))
+;----------------------------------------------
+;新闻输出版
+(define (get-new class-naem page page-number)
+  (let* ([lst '(pic title newstime befrom content)]
+         [vs  
+          (query-rows xitong (string-append "select "(query-eles lst)" from newsdata  where  catename =? order by  newstime  desc limit "
+                                            (number->string (* page-number (- page 1)))","(number->string page-number)" ")class-naem)])    
+(map (lambda (v)
+         (vector->hash lst v))
+       vs)))

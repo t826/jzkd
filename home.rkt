@@ -27,10 +27,14 @@
     (if (null? id-lst) '()
     (table-query-many table-name id-lst lst)))) #f))
 
+;获取佣金日志
+(define (get-commission_log ids )
+(select-join-table "commission_log" "user" '(userId rmb Commission_content offer_id create_time )   '(name account ) "commission_log.userId=user.id" ids))
 
 
 
-  
+
+
 ;平台总用户数
 (define (allUser)
   (get-numbers-col "user"))

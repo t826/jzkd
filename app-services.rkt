@@ -46,27 +46,41 @@
        (if (and userId shangji_id (not (eq? userId  shangji_id)) (inserte-invite2 userId  shangji_id ))
            (response/cors/jsexpr (hasheq 'status "ok"))
            (response/cors/jsexpr (hasheq 'status "error"
-                                          'msg "该id为下级代理")))))
+                                          'msg "该id已存在上下级关联")))))
          
            
-
+;-----------------------------------------
 ;;分销模块
+(define (web-get-all-level req)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken")])
+;贡献排行 (获取前三）
 
-;贡献排行
-;贡献排行
- ;今日收入 ；昨日收入
- ;会员好友
+
+;昨日今日收入
+     ;今日收入 ；昨日收入
+(define (commission-time userId)
+  (define yesterday(query-value xitong "select sum(rmb)from commission_log where userId=? and
+  TIMESTAMPDIFF(DAY,date(create_time),now())=1"userId))
+  (define today (query-value xitong "select sum(rmb)from commission_log where userId=? and
+  TIMESTAMPDIFF(DAY,date(create_time),now())=0" userId))
+  (values (cons 'yesterday_commission yesterday) (cons 'today_commission today)))
+         
+ ;会员好友 返回hasheq
+(get-xiaji_id userId )))
 
 
 
-(define BS #"123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-(define BS-LEN (bytes-length BS))
-(define (random-code-n n)
-  (cond
-    [(= n 0) '()]
-    [else
-     (cons (bytes-ref BS (random BS-LEN))
-           (random-code-n (- n 1)))]))
+
+;(define BS #"123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+;(define BS-LEN (bytes-length BS))
+;(define (random-code-n n)
+ ; (cond
+ ;   [(= n 0) '()]
+ ;   [else
+ ;    (cons (bytes-ref BS (random BS-LEN))
+  ;         (random-code-n (- n 1)))]))
 
 
 ;(time (void (random-code-n 100000)))
