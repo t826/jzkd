@@ -2,6 +2,7 @@
 (require racket/trace racket/vector) (provide (all-defined-out))(require racket/string) 
 (require db
          racket/port
+         racket/contract 
          "tools.rkt"
          "tools2.rkt"
          "xitong-db.rkt")
@@ -187,12 +188,3 @@ inner join user u3 on  u3.id = u2.userId where u.id =? " id))
                (hash-set! result  'xiaji (get-all-level (table-query-one-as2)))
                result))
 ;----------------------------------------------
-;新闻输出版
-(define (get-new class-naem page page-number)
-  (let* ([lst '(pic title newstime befrom content)]
-         [vs  
-          (query-rows xitong (string-append "select "(query-eles lst)" from newsdata  where  catename =? order by  newstime  desc limit "
-                                            (number->string (* page-number (- page 1)))","(number->string page-number)" ")class-naem)])    
-(map (lambda (v)
-         (vector->hash lst v))
-       vs)))

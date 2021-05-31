@@ -3,12 +3,13 @@
 (require json
          net/http-easy
          net/url
-         racket/contract
+
          racket/port
          racket/format
          racket/string
-         threading
-         "../tools.rkt")
+   
+       "../tools.rkt"
+         )
 
 (provide do-collect
          get-news-in-page)

@@ -14,7 +14,11 @@
          "home.rkt"
          "services.rkt"
          "app-services.rkt"
-         "checkCode.rkt")
+         "checkCode.rkt"
+     ; "get-news/test.rkt"
+         )
+
+;(get-data newclass)
 
 ;;; Dispatches
 (define-values (dispatcher url)
@@ -102,14 +106,15 @@
    [("api" "users" (integer-arg))
     #:method (or "delete" "options")
     web-delete-user]
-
-
+   
+;------------------------------
+ [("api" "get-news" ) ;新闻获取接口
+    #:method (or "get" "options")
+    web-get-news]
+ [("api" "update-user-msg") ;修改个人信息
+    #:method (or "post" "options")
+    web-update-user-msg]
    ))
-
-
-
-
-
 
 
 

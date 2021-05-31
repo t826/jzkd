@@ -1,11 +1,12 @@
 #lang racket/base
 
 (require db
-         "collect-core.rkt"
+  "collect-core.rkt"
          "../xitong-db.rkt"
          "../select-db.rkt"
          net/http-easy
          )
+(provide (all-defined-out))
 
 ;;;;;;;;;;; 使用示例 ;;;;;;;;;;;;;;;;;
 
@@ -29,22 +30,24 @@
      (let loop ([newclass newclass])
        (for ([(k v) newclass]) ;遍历各个版块
          (with-handlers ([exn:fail? (lambda (e) (writeln e))])
-           (map (λ (group) ;遍历整个版块
-                  (define group_pair (hash->list group))
-                  (let ([elet (get-news-in-page (hash-ref group 'linkHref ))])
-                    (unless (or (not elet)
-                                (table-query-col  "newsdata" "title"  (hash-ref group 'title) "title"))
+           (map (λ (group) ;遍历整个版块 
+                  (let ([group_pair (hash->list group)]
+                        [elet (get-news-in-page (hash-ref group 'linkHref ))])
+                     (with-handlers ([exn:fail? (repeat-news (hash-ref group 'title))])
+                    (unless (table-query-col  "newsdata" "title"  (hash-ref group 'title) "title")
                       (table-insert-one "newsdata"
                                         (append (remove (assoc 'type group_pair) (remove (assoc 'linkHref group_pair) group_pair))
                                                 elet
-                                                (list (cons 'newstime (number->string(current-milliseconds))) (cons 'catename (symbol->string k))))))))
+                                                (list (cons 'newstime (number->string(current-milliseconds))) (cons 'catename (symbol->string k)))))))))
                 (do-collect v))))
-       (sleep 120)
+       (sleep 240)
        (loop newclass))))) ;休眠一分半从新遍历各个版块
-  
-  
 
+(define (repeat-news title)
+  (query-exec xitong "delete from newsdata where title=?" title))
 (get-data newclass)
+
+
 
 
 #|

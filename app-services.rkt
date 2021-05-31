@@ -34,7 +34,7 @@
             (response/cors/jsexpr (hasheq 'status "error"
                                           'msg "验证错误")))))
 
-
+;个人主页填写邀请
 (define (web-set-invite-id req)
   (let* ([binding (request-bindings req)]
          [header (request-headers req)]
@@ -49,26 +49,61 @@
                                           'msg "该id已存在上下级关联")))))
          
            
-;-----------------------------------------
-;;分销模块
+
+;新闻模块
+(define (web-get-news req)
+  (let* ([bindings (request-bindings req)]
+         [class-naem (extract-binding/single 'class-naem bindings)]
+         [time (extract-binding/single 'time bindings)]
+         [page (extract-binding/single 'page bindings)]
+         [page-number (extract-binding/single 'page-number bindings)]
+         [ad (get-new class-naem time  (string->number page) (string->number page-number))])
+    (if ad  (response/cors/jsexpr ad)
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "验证错误")))))
+;修改个人信息
+
+(define (web-update-user-msg req )
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [data (bytes->jsexpr(request-post-data/raw  req))]
+         [name (hash-ref data 'name #f)]
+         [account (hash-ref data 'account #f)]
+         [password (hash-ref data 'password #f)]
+         [old-password (hash-ref data 'old-password #f) ]
+         [pair-lst (list (cons 'name name ) (cons 'account  account ) (cons 'password password ))])
+    (define (m:hash-remove-all#f ht)
+      (define mht (hash-copy ht))
+      (hash-for-each
+       mht
+       (lambda (k v)
+         (when (equal? v #f)
+           (hash-remove! mht k))))
+      mht)
+    (define  new-lst (hash->list (m:hash-remove-all#f (make-hasheq pair-lst))))
+    
+    (if (and (not (null? new-lst)) (update-user-msg userToken  old-password new-lst ))
+        
+        (response/cors/jsexpr (hasheq 'status "ok"))
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "密码或手机号错误")))))
+        
+
+;获取下级id
 (define (web-get-all-level req)
   (let* ([header (request-headers req)]
          [userToken (cdr (assoc 'auth header))]
          [userId (table-query-col  "user" "id"  userToken "userToken")])
-;贡献排行 (获取前三）
+        ;会员好友 返回hasheq
+    (get-xiaji_id userId )))
 
 
-;昨日今日收入
-     ;今日收入 ；昨日收入
-(define (commission-time userId)
-  (define yesterday(query-value xitong "select sum(rmb)from commission_log where userId=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now())=1"userId))
-  (define today (query-value xitong "select sum(rmb)from commission_log where userId=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now())=0" userId))
-  (values (cons 'yesterday_commission yesterday) (cons 'today_commission today)))
-         
- ;会员好友 返回hasheq
-(get-xiaji_id userId )))
+
+
+
+
+
+
 
 
 
