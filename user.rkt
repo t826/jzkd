@@ -1,5 +1,5 @@
 #lang racket/base 
-(require db racket/date db/util/datetime "xitong-db.rkt" "crypto.rkt" "select-db.rkt" "associate.rkt"  "tools.rkt" ) 
+(require db racket/date db/util/datetime  racket/format "xitong-db.rkt" "crypto.rkt" "select-db.rkt" "associate.rkt"  "tools.rkt" ) 
 (provide (all-defined-out))
 ;验证秘钥
 (date-display-format 'iso-8601)
@@ -83,14 +83,17 @@
 ;;用户我的主页模块二
 
 ;发起提现
-(define (post-waitWithdraw Amount userToken)
-  (let* ([userId (table-query-col  "user" "id"  userToken "userToken")]
-         [blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
+(define (post-waitWithdraw Amount userId)
+  (let* ([blan (table-query-col  "monManage" "blanWithdraw"  userId "userId")]
          [wait (table-query-col  "monManage" "waitWithdraw"  userId "userId")])
     (cond [(and (> blan 0) (> Amount 0) (>= (- blan Amount)0) )
-           (table-update-one "monManage" #:id-name "userId" userId (list (cons 'blanWithdraw (- blan Amount)) (cons 'waitWithdraw  Amount))) ;余额转待提现
-           (table-insert-one "monChangeLog" (list (cons 'userId userId) (cons 'changeProjet "blanWithdraw") (cons 'changeContent  (- Amount)))) ;更新余额日志                 
-           (table-insert-one "monChangeLog" (list (cons 'userId userId) (cons 'changeProjet "waitWithdraw") (cons 'changeContent  Amount)))] ;更新待提现日志
+           (table-update-one "monManage" #:id-name "userId" userId (list (cons 'blanWithdraw (- blan Amount)) (cons 'waitWithdraw (+ wait Amount) ))) ;余额转待提现
+           (table-insert-one "monChangeLog" (list (cons 'userId userId)
+                                                  (cons 'changeProjet "blanWithdraw")
+                                                  (cons 'changeContent  (- Amount)) (cons 'remark "余额转提现"))) ;添加余额日志                 
+           (table-insert-one "monChangeLog" (list (cons 'userId userId)
+                                                  (cons 'changeProjet "waitWithdraw")
+                                                  (cons 'changeContent  Amount) (cons 'remark "余额转提现")))] ;添加待提现日志
           [else #f])))
   
 ;账目明细 返回#hasheq
@@ -155,9 +158,17 @@
   (when (assoc 'account pair-lst) ;验证手机号格式
     (unless  (regexp-match-exact? #px"^1[3-9]\\d{9}$"  (cdr(assoc 'account pair-lst))) (set! re #f))) 
   (let ([userId (query-maybe-value xitong "select id from user where userToken=? and password=?"userToken keyword)])
-    (if  (and re userId)  
-                 (table-update-one "user" userId pair-lst) #f)))
-;--------------------------------------------------------------------
+    (if  (and re userId)  (begin
+                            (table-insert-one "operationlog" (list (cons 'operatorId userId) (cons 'byId userId)
+                           (cons 'operationInstruct (string-append "(table-update-one \"user\"" " " (~v  userId pair-lst)")"))));添加操作日志
+                            (table-update-one "user" userId pair-lst)) #f))) ;更新基本信息
+  ;--------------------------------------------------------------------
+;佣金转余额接口
+(define (commission->blanWithdraw number userId)
+  (query-exec xitong "update user set userCommission = userCommission - ? where id = ?" number userId) ;更新佣金
+  (query-exec xitong "update monmanage set blanWithdraw = blanWithdraw + ? where id = ?" number userId) ;更新余额
+ (table-insert-one "monchangelog" (list (cons 'userId userId) (cons 'changeProjet "blanWithdraw") (cons 'remark "佣金转余额" ) (cons 'changeContent number)))#t) ;添加财务余额日志
+  
   
   
 
@@ -204,29 +215,8 @@
 ;  平台管理员 rootUser
 ;  封号状态   sealUser
 
-;管理员功能
-;有条件查询用户
-(define (select  col keyword)
-  (query-rows xitong  (string-append "select * from user where " col "=?") keyword))
 
 
 
-
-
-;用户账号 密码 昵称修改
-;  密码例如：(updata "password"  1 1 "4567ijk")  ((updata "修改项"  权限id  修改的id "修改内容")
-;  平台管理员可以修改任意项
-(define (update userdate rootId  id  new-value)
-  (if  (> (length(query-rows xitong "select * from user  where userType='rootUser' and id=?" rootId)) 0)
-       (query-exec xitong
-                   (string-append "UPDATE user SET " userdate " = ? where id = ?")new-value id)
-       (cond [(= rootId id)
-              (cond
-                [(or (eq? userdate "name")
-                     (eq? userdate "password")
-                     (eq? userdate "account"))
-                 (query-exec xitong(string-append "UPDATE user SET " userdate " = ? where id = ?")new-value id)]
-                [else #f])]
-             [else #f])))
 
 

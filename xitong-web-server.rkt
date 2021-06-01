@@ -114,6 +114,14 @@
  [("api" "update-user-msg") ;修改个人信息
     #:method (or "post" "options")
     web-update-user-msg]
+
+ [("api" "commission-to-blanWithdraw") ;佣金转余额
+    #:method (or "post" "options")
+    web-commission-to-blanWithdraw]
+ [("api" "post-waitWithdraw") ;发起提现
+    #:method (or "post" "options")
+    web-post-waitWithdraw]
+ 
    ))
 
 
@@ -121,7 +129,6 @@
 ;; Setup The Servlet
 (serve/servlet dispatcher
                #:command-line? #t
-               
                #:listen-ip #f
                #:port 5000
                #:servlet-path "/"
