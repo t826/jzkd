@@ -49,13 +49,29 @@
   (if v (vector->hash lst v) v))
 
 ;查询多行对应的多列 提供 多个id 列名表 返回list  list内为 #hash
-(define (table-query-many table #:id-name[id-name "id"] id-lst lst) ;查询多个id在这个表内的列 (lst 传要查的 列名symbo类型) 返回 #hash
-  (define vs (apply query-rows (append
-                                (list xitong (string-append "select " (query-eles lst) " from "table" where " id-name " in (" (strappend (length id-lst) "?" )")"))
-                                id-lst)))
-  (map (lambda (v)
-         (vector->hash lst v))
-       vs))
+(define (table-query-many table id-lst lst #:id-name[id-name "id"] #:start [start #f] #:end [end #f]) ;查询多个id在这个表内的列 (lst 传要查的 列名symbo类型) 返回 #hash
+  (cond
+    [(and start end)
+     (define vs
+       (apply query-rows
+              (append
+               (list xitong (string-append "select "
+                                           (query-eles lst)
+                                           " from " table
+                                           " where " id-name
+                                           " in (" (strappend (length id-lst) "?" )")"
+                                           " limit ?, ?"))
+               `(,@id-lst ,start ,(- end start)))))
+     (map (lambda (v)
+            (vector->hash lst v))
+          vs)]
+    [else
+     (define vs (apply query-rows (append
+                                   (list xitong (string-append "select " (query-eles lst) " from "table" where " id-name " in (" (strappend (length id-lst) "?" )")"))
+                                   id-lst)))
+     (map (lambda (v)
+            (vector->hash lst v))
+          vs)]))
 
 ; 查询单行全部值 传表名 id [id-name]     返回 #hash
 (define (table-query-row table-name #:id-name[id-name "id"] id )
@@ -157,6 +173,17 @@
                                 " LIMIT ?, ?")
                  (number->string start)
                  (number->string (- end start)))]))
+
+
+
+
+
+
+
+;查询
+;查询字段 查询表 查询条件and条件 or条件 on条件
+;(define (query-table Field-lst table 
+;(query-rows xitong (string-append "select * from "
 
 ;----------------------------------------------------
 ;分销查询工具 

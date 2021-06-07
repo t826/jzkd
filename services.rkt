@@ -254,9 +254,35 @@
        (response/cors/options/OK)]
       [else
        (response/cors/jsexpr (get-level-all  (list id)))])))
+;余额提现审核接口1
+(define (web-audit-waitWithdraw req )
+  (let* ([headers (request-headers req)]
+         [userToken (cdr (assoc 'auth headers))]
+         [root-user  (equal? (table-query-col  "user" "userType"  userToken  "userToken") "rootUser")]
+         [userId (table-query-col  "user" "id"  userToken  "userToken") ]
+         [method (request-method req)]
+         [bindings (request-bindings req)])
+    (case method
+      [(#"GET")
+       (cond [(and (exists-binding? 'id bindings ) (exists-binding? 'start bindings ) (exists-binding? 'end bindings))
+              (response/cors/jsexpr (get-commission-id (string->number(extract-binding/single 'id bindings))
+                                 (string->number(extract-binding/single 'start bindings))
+                                 (string->number(extract-binding/single 'end bindings))))]
+             [else 
+              (response/cors/jsexpr (Audit-waitWithdraw))])]
+      [(#"POST")
+       (define data (bytes->jsexpr(request-post-data/raw  req)))
+       (displayln data )
+       (define resul (filter hash? (result-waitWithdraw userId data)))
+       (if (null? resul)
+           (response/cors/jsexpr (hasheq 'status "ok"))
+           (response/cors/jsexpr resul))]
+      [(#"OPTIONS") (response/cors/options/OK)])))
+
+
 
 ;佣金日志
-(define (web-commission_log req)
+ (define (web-commission_log req)
   (if (equal? #"OPTIONS" (request-method req))
       (response/cors/options/OK)
       (let* ([bindings (request-bindings req)]
@@ -406,3 +432,4 @@
      (if (table-delete-one "user" id)
          (response/cors/options/OK)
          (response/cors/options/400))]))
+

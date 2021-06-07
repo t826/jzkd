@@ -77,14 +77,6 @@
     #:method (or "get" "options")
     web-associate-one]
     
-   [("api" "set-invite-id" ) ;用户主页填写上级id
-    #:method (or "get" "options")
-    web-set-invite-id]
-   
-   [("api" "get-all-level" ) ;用户下级代理id
-    #:method (or "get" "options")
-    web-get-all-level]
-   
 
    ;; 获取用户表接口
    [("api" "users")
@@ -106,8 +98,20 @@
    [("api" "users" (integer-arg))
     #:method (or "delete" "options")
     web-delete-user]
-   
+
+   [("api" "audit-waitWithdraw") ;提现审核接口
+    #:method (or "get" "post" "options")
+    web-audit-waitWithdraw]
+ 
 ;------------------------------
+      [("api" "set-invite-id" ) ;用户主页填写上级id
+    #:method (or "get" "options")
+    web-set-invite-id]
+   
+   [("api" "get-all-level" ) ;用户下级代理id
+    #:method (or "get" "options")
+    web-get-all-level]
+   
  [("api" "get-news" ) ;新闻获取接口
     #:method (or "get" "options")
     web-get-news]
@@ -119,6 +123,9 @@
     #:method (or "post" "options")
     web-commission-to-blanWithdraw]
  [("api" "post-waitWithdraw") ;发起提现
+    #:method (or "post" "options")
+    web-post-waitWithdraw]
+ [("api" "post-waitWithdraw") ;个人账户明细
     #:method (or "post" "options")
     web-post-waitWithdraw]
  

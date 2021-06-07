@@ -132,10 +132,8 @@
          [data (bytes->jsexpr(request-post-data/raw  req))]
          [Amount  (hash-ref data 'post-waitWithdraw #f)]
          [userId (table-query-col  "user" "id"  userToken "userToken")])
-    (if (and userId Amount (number?  Amount))
-        (begin 
-          (post-waitWithdraw Amount userId)
-             (response/cors/jsexpr (hasheq 'status "ok")))
+    (if (and userId Amount (number?  Amount) (post-waitWithdraw Amount userId))
+             (response/cors/jsexpr (hasheq 'status "ok"))
         (response/cors/jsexpr (hasheq 'status "error"
                                       'msg "账户余额不足"))))))
          

@@ -67,14 +67,14 @@
   (if userId
       (let* ([my-msg (table-query-one "user" userId '(name id avatar shangji_id))] ;基本信息
              [today-income;今日收入 返回一个值
-              (query-value xitong "select sum(rmb)from commission_log where userId=? and
+              (query-value xitong "select (ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content != \"佣金->余额\" and
   TIMESTAMPDIFF(DAY,date(create_time),now())=0"userId)]
-             [forwarding-mon (sql-null->#f (query-rows xitong "select sum(rmb) from commission_log where userId=? and offer_id=?" userId userId ))] ;转发收入
+             [forwarding-mon (query-value xitong "select  (ifnull (sum(rmb) ,0 )) from commission_log where userId=? and offer_id=? and Commission_content != \"佣金->余额\" " userId userId )] ;转发收入
              [get-allmon ;累计收入 返回一个值
-              (apply + (map (λ(x) (cdr x)) 
-                            (hash->list (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw)))))]
+              (apply + (append (list (table-query-col  "user" "userCommission"  userId ))
+                            (hash-values  (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw)))))]
              [get-blanWithdraw (table-query-col  "monManage" "blanWithdraw"  userId  "userId")];账户余额 返回一个值  
-             [team-comission (sql-null->#f (query-rows xitong "select sum(rmb) from commission_log where userId=? and offer_id!=?" userId userId ))]) ;团队贡献
+             [team-comission  (query-value xitong "select (ifnull (sum(rmb),0)) from commission_log where userId=? and offer_id!=?" userId userId ))]) ;团队贡献
         (values  my-msg  today-income  forwarding-mon get-allmon get-blanWithdraw team-comission)) #f))
   
 ;-----------
@@ -90,10 +90,10 @@
            (table-update-one "monManage" #:id-name "userId" userId (list (cons 'blanWithdraw (- blan Amount)) (cons 'waitWithdraw (+ wait Amount) ))) ;余额转待提现
            (table-insert-one "monChangeLog" (list (cons 'userId userId)
                                                   (cons 'changeProjet "blanWithdraw")
-                                                  (cons 'changeContent  (- Amount)) (cons 'remark "余额转提现"))) ;添加余额日志                 
+                                                  (cons 'changeContent  (- Amount)) (cons 'remark "余额->提现"))) ;添加余额日志                 
            (table-insert-one "monChangeLog" (list (cons 'userId userId)
                                                   (cons 'changeProjet "waitWithdraw")
-                                                  (cons 'changeContent  Amount) (cons 'remark "余额转提现")))] ;添加待提现日志
+                                                  (cons 'changeContent  Amount) (cons 'remark "余额->提现")))] ;添加待提现日志
           [else #f])))
   
 ;账目明细 返回#hasheq
@@ -133,10 +133,10 @@
     ;昨日今日收入
     ;今日收入 ；昨日收入
     (define (commission-time userId)
-      (define yesterday(query-value xitong "select sum(rmb)from commission_log where userId=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now())=1"userId))
-      (define today (query-value xitong "select sum(rmb)from commission_log where userId=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now())=0" userId))
+      (define yesterday(query-maybe-value xitong "select (ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content!=? and
+  TIMESTAMPDIFF(DAY,date(create_time),now()) = 1"userId "佣金->余额"))
+      (define today (query-maybe-value xitong "select(ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content!=? and
+  TIMESTAMPDIFF(DAY,date(create_time),now()) = 0"userId "佣金->余额"))
       (values (cons 'yesterday_commission yesterday) (cons 'today_commission today)))
          
 
@@ -166,10 +166,13 @@
 ;佣金转余额接口
 (define (commission->blanWithdraw number userId)
   (query-exec xitong "update user set userCommission = userCommission - ? where id = ?" number userId) ;更新佣金
+  (table-insert-one "commission_log" (list (cons 'userId userId) (cons 'rmb (- number)) (cons 'Commission_content "佣金->余额" ) (cons 'offer_id userId))) ;添加佣金日志
   (query-exec xitong "update monmanage set blanWithdraw = blanWithdraw + ? where id = ?" number userId) ;更新余额
- (table-insert-one "monchangelog" (list (cons 'userId userId) (cons 'changeProjet "blanWithdraw") (cons 'remark "佣金转余额" ) (cons 'changeContent number)))#t) ;添加财务余额日志
-  
-  
+ (table-insert-one "monchangelog" (list (cons 'userId userId) (cons 'changeProjet "blanWithdraw") (cons 'remark "佣金->余额" ) (cons 'changeContent number)))#t) ;添加财务余额日志
+
+;-----------------------------------------------------
+
+
   
 
 
