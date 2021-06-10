@@ -125,9 +125,18 @@
  [("api" "post-waitWithdraw") ;发起提现
     #:method (or "post" "options")
     web-post-waitWithdraw]
- [("api" "post-waitWithdraw") ;个人账户明细
-    #:method (or "post" "options")
-    web-post-waitWithdraw]
+ [("api" "get-monlog") ;个人账户明细
+    #:method (or "get" "options")
+    web-get-monlog]
+ [("api" "get-my-contribution") ;我的贡献
+    #:method (or "get" "options")
+    web-get-my-contribution]
+ [("api" "get-my-home") ;我的主页
+    #:method (or "get" "options")
+    web-get-my-home]
+ [("api" "get-commission") ;分销
+    #:method (or "get" "options")
+    web-get-commission]
  
    ))
 

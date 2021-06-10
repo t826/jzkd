@@ -134,8 +134,55 @@
          [userId (table-query-col  "user" "id"  userToken "userToken")])
     (if (and userId Amount (number?  Amount) (post-waitWithdraw Amount userId))
              (response/cors/jsexpr (hasheq 'status "ok"))
+        (response/cors/jsexpr (hasheq 'status "error" 'msg "账户余额不足"))))))
+
+
+
+;账户明细
+(define (web-get-monlog req )
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken")])
+    (if userId
+             (response/cors/jsexpr (get-monchangelog userId))
         (response/cors/jsexpr (hasheq 'status "error"
-                                      'msg "账户余额不足"))))))
+                                      'msg "账户验证失败"))))))
+;用户主页我的贡献
+(define (web-get-my-contribution req)
+  (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken")])
+    (if userId
+             (response/cors/jsexpr (contribution userId))
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "账户验证失败"))))))
+;我的主页页面数据
+(define (web-get-my-home req)
+   (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken")])
+    (if userId
+             (response/cors/jsexpr (user-home userId ))
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "账户验证失败"))))))
+;我的分销
+(define (web-get-commission req)
+   (if (equal? #"OPTIONS" (request-method req))
+      (response/cors/options/OK)
+  (let* ([header (request-headers req)]
+         [userToken (cdr (assoc 'auth header))]
+         [userId (table-query-col  "user" "id"  userToken "userToken")])
+    (if userId
+             (response/cors/jsexpr (commission-time userId))
+        (response/cors/jsexpr (hasheq 'status "error"
+                                      'msg "账户验证失败"))))))
+  
          
   
 

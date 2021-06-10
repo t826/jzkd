@@ -53,19 +53,15 @@
     
   
 ;用户基本数据接口
-(define (myhome userToken)
-  (define userId (table-query-col "user" "id" userToken "userToken")) ;
-  (if userId 
-      (select-join-table "user" "monManage" '(name id avatar shangji_id) '(blanWithdraw  waitWithdraw sucWithdraw refWithdraw )"user.id=monManage.userId" (list userId)) #f))
+(define (myhome userId)
+      (select-join-table "user" "monManage" '(name id avatar shangji_id) '(blanWithdraw  waitWithdraw sucWithdraw refWithdraw )"user.id=monManage.userId" (list userId)))
        
 
 ;-----------------------------------------------------------------------
 ;;我的主页模块
 
-(define (user-home userToken )
-  (define userId (table-query-col "user" "id" userToken "userToken"))
-  (if userId
-      (let* ([my-msg (table-query-one "user" userId '(name id avatar shangji_id))] ;基本信息
+(define (user-home userId )
+      (let* ([my-msg (myhome userId)] ;基本信息
              [today-income;今日收入 返回一个值
               (query-value xitong "select (ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content != \"佣金->余额\" and
   TIMESTAMPDIFF(DAY,date(create_time),now())=0"userId)]
@@ -73,9 +69,9 @@
              [get-allmon ;累计收入 返回一个值
               (apply + (append (list (table-query-col  "user" "userCommission"  userId ))
                             (hash-values  (table-query-one "monManage" #:id-name"userId" userId '(blanWithdraw waitWithdraw sucWithdraw refWithdraw)))))]
-             [get-blanWithdraw (table-query-col  "monManage" "blanWithdraw"  userId  "userId")];账户余额 返回一个值  
-             [team-comission  (query-value xitong "select (ifnull (sum(rmb),0)) from commission_log where userId=? and offer_id!=?" userId userId ))]) ;团队贡献
-        (values  my-msg  today-income  forwarding-mon get-allmon get-blanWithdraw team-comission)) #f))
+            ; [get-blanWithdraw (table-query-col  "monManage" "blanWithdraw"  userId  "userId")];账户余额 返回一个值  
+             [team-comission  (query-value xitong "select (ifnull (sum(rmb),0)) from commission_log where userId=? and offer_id!=?" userId userId )]) ;团队贡献
+        (hasheq  'my-msg my-msg  'today-income today-income   'forwarding-mon forwarding-mon 'get-allmon get-allmon 'team-comission team-comission)))
   
 ;-----------
 
@@ -99,9 +95,15 @@
 ;账目明细 返回#hasheq
 (define (get-monchangelog userId)
   (table-query-many "monChangeLog" #:id-name"userId" (list userId) '(changeProjet changeContent changeTime)))
-;累积贡献
+;累积贡献 返回#hasheq
 (define (contribution userId)
-  (sql-null->#f (query-rows xitong "select userId, rmb, Commission_content, sum(rmb) from commission_log where userId!=? and offer_id=?" userId userId )))
+  (define sum (query-value xitong "select (ifnull (sum(rmb),0)) from commission_log where userId!=? and offer_id=?" userId userId ))
+  (define data (query-rows xitong "select
+userId, rmb, Commission_content from commission_log where userId!=? and offer_id=?" userId userId ))
+  (if (= sum 0) '()
+      (list(hasheq 'sum sum 'data
+              (for/list ([data data]) (hasheq 'userId (vector-ref data 0) 'rmb (vector-ref data 1) 'Commission_content (vector-ref data 2)))))))
+
 ;客服
 ;常见问题
 ;;用户我的主页模块三
@@ -134,10 +136,10 @@
     ;今日收入 ；昨日收入
     (define (commission-time userId)
       (define yesterday(query-maybe-value xitong "select (ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content!=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now()) = 1"userId "佣金->余额"))
+  TIMESTAMPDIFF(DAY,date(create_time),now()) = 1" userId "佣金->余额"))
       (define today (query-maybe-value xitong "select(ifnull (sum(rmb) ,0 )) from commission_log where userId=? and Commission_content!=? and
-  TIMESTAMPDIFF(DAY,date(create_time),now()) = 0"userId "佣金->余额"))
-      (values (cons 'yesterday_commission yesterday) (cons 'today_commission today)))
+  TIMESTAMPDIFF(DAY,date(create_time),now()) = 0" userId "佣金->余额"))
+      (hasheq 'yesterday_commission yesterday 'today_commission today))
          
 
 
